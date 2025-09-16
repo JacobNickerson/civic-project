@@ -1,0 +1,6 @@
+@TownVoiceApi_HostAddress = http://localhost:5172
+
+GET {{TownVoiceApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
