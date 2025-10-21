@@ -17,6 +17,6 @@ namespace Api.Models
         public required EventVisibility Visibility { get; set; } 
 
         public required User Author { get; set; }
-        public required List<EventFollow> Followers { get; set; }
+        public List<EventFollow> Followers { get; set; } = new();
     }
 }

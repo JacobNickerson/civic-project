@@ -20,42 +20,64 @@ namespace Api.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Setting Primary Keys
-            modelBuilder.Entity<User>().HasKey(u => u.Id);
-            modelBuilder.Entity<Auth>().HasKey(a => a.UserId);
-            modelBuilder.Entity<Conversation>().HasKey(c => c.Id);
-            modelBuilder.Entity<UserInConversation>().HasKey(uc => new { uc.UserId, uc.ConversationId });
-            modelBuilder.Entity<Message>().HasKey(m => m.Id);
-            modelBuilder.Entity<Event>().HasKey(e => e.Id);
-            modelBuilder.Entity<EventFollow>().HasKey(ef => new { ef.UserId, ef.EventId });
-            modelBuilder.Entity<Post>().UseTptMappingStrategy().HasKey(p => p.Id);
-            modelBuilder.Entity<PostReaction>().HasKey(pl => new { pl.UserId, pl.PostId } );
-            modelBuilder.Entity<Petition>();
-            modelBuilder.Entity<PetitionSignature>().HasKey(ps => new { ps.UserId, ps.PetitionId } );
-
+            ConfigureUser(modelBuilder);
+            ConfigureAuth(modelBuilder);
+            ConfigureConversations(modelBuilder);
+            ConfigureConversationMembers(modelBuilder);
+            ConfigureMessages(modelBuilder);
+            ConfigureEvents(modelBuilder);
+            ConfigureEventFollows(modelBuilder);
+            ConfigurePosts(modelBuilder);
+            ConfigurePostReactions(modelBuilder);
+            ConfigurePetitions(modelBuilder);
+            ConfigurePetitionSignatures(modelBuilder);
             foreach (var entity in modelBuilder.Model.GetEntityTypes())
             {
-                entity.SetTableName(entity.GetTableName().ToLower());
+                var name = entity.GetTableName();
+                if (name != null)
+                {
+                    entity.SetTableName(name.ToLower());
+                }
             }
 
-            // Setting Foreign Keys/Relationships
+        }
+
+        private void ConfigureUser(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Id);
+            modelBuilder.Entity<User>()
+                .Property(u => u.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        }
+        private void ConfigureAuth(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Auth>()
+                .HasKey(a => a.UserId);
+            modelBuilder.Entity<Auth>()
+                .Property(a => a.FailedAttempts)
+                .HasDefaultValue(0);
             modelBuilder.Entity<Auth>()
                 .HasOne(a => a.User)
                 .WithOne(u => u.Auth)
                 .HasForeignKey<Auth>(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Conversation)
-                .WithMany(c => c.Messages)
-                .HasForeignKey(m => m.ConversationId)
-                .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.User)
-                .WithMany(c => c.Messages)
-                .HasForeignKey(m => m.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-
+        }
+        private void ConfigureConversations(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Conversation>()
+                .HasKey(c => c.Id);
+            modelBuilder.Entity<Conversation>()
+                .Property(c => c.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        }
+        private void ConfigureConversationMembers(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<UserInConversation>()
+                .HasKey(uc => new { uc.UserId, uc.ConversationId });
+            modelBuilder.Entity<UserInConversation>()
+                .Property(cm => cm.JoinedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<UserInConversation>()
                 .HasOne(uc => uc.User)
                 .WithMany(u => u.Conversations)
@@ -66,13 +88,45 @@ namespace Api.Data
                 .WithMany(u => u.Users)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
+        }
+        private void ConfigureMessages(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Message>()
+                .HasKey(m => m.Id);
+            modelBuilder.Entity<Message>()
+                .Property(m => m.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            modelBuilder.Entity<Message>()
+                .Property(m => m.IsDeleted)
+                .HasDefaultValue(false);
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.User)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+        private void ConfigureEvents(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Event>()
+                .HasKey(e => e.Id);
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Author)
                 .WithMany(u => u.CreatedEvents)
                 .HasForeignKey(e => e.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
-
+        }
+        private void ConfigureEventFollows(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<EventFollow>()
+                .HasKey(ef => new { ef.UserId, ef.EventId });
+            modelBuilder.Entity<EventFollow>()
+                .Property(ef => ef.IsNotified)
+                .HasDefaultValue(false);
             modelBuilder.Entity<EventFollow>()
                 .HasOne(ef => ef.User)
                 .WithMany(u => u.FollowedEvents)
@@ -83,13 +137,34 @@ namespace Api.Data
                 .WithMany(e => e.Followers)
                 .HasForeignKey(ef => ef.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
-
+        }
+        private void ConfigurePosts(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Post>()
+                .UseTptMappingStrategy()
+                .HasKey(p => p.Id);
+            modelBuilder.Entity<Post>()
+                .Property(p => p.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            modelBuilder.Entity<Post>()
+                .Property(p => p.IsOfficial)
+                .HasDefaultValue(false);
+            modelBuilder.Entity<Post>()
+                .Property(p => p.IsDeleted)
+                .HasDefaultValue(false);
             modelBuilder.Entity<Post>()
                 .HasOne(p => p.Author)
                 .WithMany(u => u.Posts)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
+        }
+        private void ConfigurePostReactions(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PostReaction>()
+                .HasKey(pr => new { pr.UserId, pr.PostId });
+            modelBuilder.Entity<PostReaction>()
+                .Property(pr => pr.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<PostReaction>()
                 .HasOne(pr => pr.Author)
                 .WithMany(u => u.Reactions)
@@ -100,7 +175,20 @@ namespace Api.Data
                 .WithMany(p => p.Reactions)
                 .HasForeignKey(pr => pr.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
-
+        }
+        private void ConfigurePetitions(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Petition>()
+                .Property(p => p.SignatureCount)
+                .HasDefaultValue(0);
+            modelBuilder.Entity<Petition>()
+                .Property(p => p.Status)
+                .HasDefaultValue(PetitionStatus.PendingVerification);
+        }
+        private void ConfigurePetitionSignatures(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PetitionSignature>()
+                .HasKey(ps => new { ps.UserId, ps.PetitionId } );
             modelBuilder.Entity<PetitionSignature>()
                 .HasOne(ps => ps.User)
                 .WithMany(u => u.SignedPetitions)

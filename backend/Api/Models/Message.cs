@@ -7,7 +7,7 @@ namespace Api.Models
         public required int SenderId { get; set; }
         public required string Content { get; set; }
         public string? AttachmentUrl { get; set; }
-        public required DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
         public DateTime? EditedAt { get; set; }
         public bool IsDeleted { get; set; }
 
