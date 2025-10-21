@@ -3,6 +3,7 @@ using System;
 using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(TVDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251021182917_SetupSchema")]
+    partial class SetupSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -287,6 +290,11 @@ namespace Api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("integer");
+
+                    b.HasIndex("UserId1");
+
                     b.ToTable("petitions");
                 });
 
@@ -425,6 +433,10 @@ namespace Api.Migrations
                         .HasForeignKey("Api.Models.Petition", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Api.Models.User", null)
+                        .WithMany("Petitions")
+                        .HasForeignKey("UserId1");
                 });
 
             modelBuilder.Entity("Api.Models.Conversation", b =>
@@ -456,6 +468,8 @@ namespace Api.Migrations
                     b.Navigation("FollowedEvents");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("Petitions");
 
                     b.Navigation("Posts");
 
