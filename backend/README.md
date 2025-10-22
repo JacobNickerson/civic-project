@@ -157,8 +157,8 @@ backend/
 - Keep commits small and frequent, each commit should have one singular focus
 - Squash commits before raising a pull request to `backend`, pull requests must pass all tests and be code-reviewed (tentative, this might be too much of a pain for a project of this scope)
 #### Branching Strategies
-- All branches pertaining to backend developments should be prefixed with `backend/`
-- Additionally, a type should be appended to the prefix, for example a feature would be `backend/feat/new-feat`
+- All branches pertaining to backend developments should be prefixed with `<branch-type>/backend/`
+- For example, a feature branch can be made as `feat/backend/feature-name`
 
 ### Testing Requirements
 - Generally, a TDD approach should be followed, but given the limited scope of this project this will not be enforced
