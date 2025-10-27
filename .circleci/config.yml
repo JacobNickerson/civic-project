@@ -42,7 +42,7 @@ jobs:
       - run:
           name: "Change username and password in appsettings"
           working_directory: ~/project/backend
-          command: "sed -i 's/YOURUSERNAME/postgres/g' Api/appsettings.json && sed -i 's/YOURPASSWORD/postgres/g' Api/appsettings.json"
+          command: "sed -i 's/YOUR_USERNAME/postgres/g' Api/appsettings.json && sed -i 's/YOUR_PASSWORD/postgres/g' Api/appsettings.json"
       - run:
           name: "Apply database migrations"
           working_directory: ~/project/backend
