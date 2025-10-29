@@ -7,7 +7,7 @@ using Api.Password;
 namespace Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")] // base route: /api/example
+    [Route("api/[controller]")] // base route: /api/example
     public class UsersController : ControllerBase
     {
         private readonly UserService _userService;
@@ -23,7 +23,7 @@ namespace Api.Controllers
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null) return NotFound();
-            return Ok(user);
+            return Ok(new { user.Id, user.Username });
         }
 
         // POST api/example

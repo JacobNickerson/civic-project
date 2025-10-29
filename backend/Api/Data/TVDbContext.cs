@@ -38,6 +38,10 @@ namespace Api.Data
                 {
                     entity.SetTableName(name.ToLower());
                 }
+                foreach (var property in entity.GetProperties())
+                {
+                    property.SetColumnName(property.GetColumnName().ToLower()); 
+                }
             }
 
         }
