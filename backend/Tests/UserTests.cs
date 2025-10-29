@@ -35,9 +35,10 @@ public class UserApiTests
         // Arrange
         var (_, _, _, usersController) = setupResources();
         string username = "john";
+        string name = "John Dingle";
         string email = "test@tester.com";
         string password = "TheExamplePassword12345!!";
-        var createUserRequest = new CreateUserRequest { Username = username, Email = email, Password = password };
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
 
         // Act: Register
         var registerResult = await usersController.CreateUser(createUserRequest);
@@ -55,9 +56,10 @@ public class UserApiTests
     {
         var (_, _, _, usersController) = setupResources();
         string username = "john";
+        string name = "John Dingle";
         string password = "TheExamplePassword12345!!";
-        var createUserRequest1 = new CreateUserRequest { Username = username, Email = "test@tester.com", Password = password };
-        var createUserRequest2 = new CreateUserRequest { Username = username, Email = "nottest@tester.com", Password = password + "plussome" };
+        var createUserRequest1 = new CreateUserRequest { Username = username, Name = name, Email = "test@tester.com", Password = password };
+        var createUserRequest2 = new CreateUserRequest { Username = username, Name = "John Dongle", Email = "nottest@tester.com", Password = password + "plussome" };
 
         // Act: Register
         var registerResult1 = await usersController.CreateUser(createUserRequest1);
@@ -72,9 +74,10 @@ public class UserApiTests
         // Arrange
         var (_, _, _, usersController) = setupResources();
         string username = "john";
+        string name = "John Dingle";
         string email = "test@tester.com";
         string password = "TheExamplePassword12345!!";
-        var createUserRequest = new CreateUserRequest { Username = username, Email = email, Password = password };
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
 
         // Act: Register
         var registerResult = await usersController.CreateUser(createUserRequest);
@@ -93,9 +96,10 @@ public class UserApiTests
         // Arrange
         var (_, _, _, usersController) = setupResources();
         string username = "john";
+        string name = "John Dingle";
         string email = "test@tester.com";
         string password = "TheExamplePassword12345!!";
-        var createUserRequest = new CreateUserRequest { Username = username, Email = email, Password = password };
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
 
         // Act: Register
         var registerResult = await usersController.CreateUser(createUserRequest);
