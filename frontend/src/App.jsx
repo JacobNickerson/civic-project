@@ -9,7 +9,7 @@ function App() {
       <Routes>
         <Route path='/' element={<HomeScreen/>}/>
         <Route path='/sign-in' element={<SignInScreen/>}/>
-        <Route path='*' element={<Navigate to='/' replace/>}/>
+        <Route path='*' element={<Navigate to='/' replace/>}/> 
       </Routes>
     </div>
   )
