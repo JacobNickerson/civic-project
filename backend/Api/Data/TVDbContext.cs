@@ -7,7 +7,7 @@ namespace Api.Data
     {
         public TVDbContext(DbContextOptions<TVDbContext> options) : base(options) {} 
         public DbSet<User> Users { get; set; }
-        public DbSet<Auth> Auth { get; set; }
+        public DbSet<UserAuth> Auth { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<UserInConversation> ConversationMembers { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -22,6 +22,7 @@ namespace Api.Data
         {
             ConfigureUser(modelBuilder);
             ConfigureAuth(modelBuilder);
+            ConfigureProfiles(modelBuilder);
             ConfigureConversations(modelBuilder);
             ConfigureConversationMembers(modelBuilder);
             ConfigureMessages(modelBuilder);
@@ -56,15 +57,25 @@ namespace Api.Data
         }
         private void ConfigureAuth(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Auth>()
+            modelBuilder.Entity<UserAuth>()
                 .HasKey(a => a.UserId);
-            modelBuilder.Entity<Auth>()
+            modelBuilder.Entity<UserAuth>()
                 .Property(a => a.FailedAttempts)
                 .HasDefaultValue(0);
-            modelBuilder.Entity<Auth>()
+            modelBuilder.Entity<UserAuth>()
                 .HasOne(a => a.User)
                 .WithOne(u => u.Auth)
-                .HasForeignKey<Auth>(a => a.UserId)
+                .HasForeignKey<UserAuth>(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+        private void ConfigureProfiles(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<UserProfile>()
+                .HasKey(a => a.UserId);
+            modelBuilder.Entity<UserProfile>()
+                .HasOne(a => a.User)
+                .WithOne(u => u.Profile)
+                .HasForeignKey<UserProfile>(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
         private void ConfigureConversations(ModelBuilder modelBuilder)

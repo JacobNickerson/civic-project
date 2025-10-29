@@ -3,6 +3,7 @@ using System;
 using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(TVDbContext))]
-    partial class TVDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029214026_AdjustAuthTableName")]
+    partial class AdjustAuthTableName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,6 +283,11 @@ namespace Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("email");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text")
@@ -350,30 +358,6 @@ namespace Api.Migrations
                     b.HasIndex("ConversationId");
 
                     b.ToTable("conversationmembers");
-                });
-
-            modelBuilder.Entity("Api.Models.UserProfile", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("userid");
-
-                    b.Property<string>("Bio")
-                        .HasColumnType("text")
-                        .HasColumnName("bio");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Pic")
-                        .HasColumnType("text")
-                        .HasColumnName("pic");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("userprofile");
                 });
 
             modelBuilder.Entity("Api.Models.Petition", b =>
@@ -523,17 +507,6 @@ namespace Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Api.Models.UserProfile", b =>
-                {
-                    b.HasOne("Api.Models.User", "User")
-                        .WithOne("Profile")
-                        .HasForeignKey("Api.Models.UserProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Api.Models.Petition", b =>
                 {
                     b.HasOne("Api.Models.Post", null)
@@ -574,9 +547,6 @@ namespace Api.Migrations
                     b.Navigation("Messages");
 
                     b.Navigation("Posts");
-
-                    b.Navigation("Profile")
-                        .IsRequired();
 
                     b.Navigation("Reactions");
 

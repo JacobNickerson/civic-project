@@ -9,6 +9,19 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 ### GET `/{id}`
 **Description:** Get a user by their ID
 
+**Responses:**
+200 Ok
+```json
+{
+    "id" = 1,
+    "username": "example_user",
+    "name": "Example User",
+    "profilepic": "https://optionalprofilepicturelink.com/",
+    "bio": "This is my optional bio to be displayed on my account"
+}
+```
+404 Not Found
+
 ### POST `/register`
 **Description:** Register a new user account
 
@@ -18,12 +31,25 @@ Base URL: https://PENDINGDOMAINNAME.com/api
     "username": "example_user",
     "name": "Example User",
     "email": "example@email.com",
-    "password": "P@ssw0rd!"
+    "password": "P@ssw0rd!",
+    "profilepic": "https://optionalprofilepicturelink.com/",
+    "bio": "This is my optional bio to be displayed on my account"
 }
 ```
+Fields `username`, `name`, `email`, `password` are required, while `profilepic` and `bio` are optional and
+will be set to null if left blank.
 
 **Responses:**
 200 Ok
+```json
+{
+    "id" = 1,
+    "username": "example_user",
+    "name": "Example User",
+    "profilepic": "https://optionalprofilepicturelink.com/",
+    "bio": "This is my optional bio to be displayed on my account"
+}
+```
 400 Bad Request
 409 Conflict
 

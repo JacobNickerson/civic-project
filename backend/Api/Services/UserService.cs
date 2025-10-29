@@ -19,10 +19,14 @@ namespace Api.Services
         {
             return await _context
                 .Users
+                .Include(u => u.Profile)
                 .Select(u => new UserDTO
                 {
                     Id = u.Id,
-                    Username = u.Username
+                    Username = u.Username,
+                    Name = u.Profile.Name,
+                    Bio = u.Profile.Bio,
+                    ProfilePic = u.Profile.Pic
                 })
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
@@ -34,10 +38,10 @@ namespace Api.Services
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public async Task<bool> RegisterUserAsync(CreateUserRequest userInfo)
+        public async Task<User?> RegisterUserAsync(CreateUserRequest userInfo)
         {
             if (await _context.Users.AnyAsync(u => u.Username == userInfo.Username))
-                return false;
+                return null;
 
             var (hash, salt) = PasswordHelper.CreatePasswordHash(userInfo.Password);
 
@@ -46,17 +50,22 @@ namespace Api.Services
             var user = new User
             {
                 Username = userInfo.Username,
-                Name = userInfo.Name,
                 Email = userInfo.Email,
-                Auth = new Auth
+                Auth = new UserAuth
                 {
                     PasswordHash = hash,
                     PasswordSalt = salt
+                },
+                Profile = new UserProfile
+                {
+                    Name = userInfo.Name,
+                    Pic = userInfo.ProfilePic,
+                    Bio = userInfo.Bio 
                 }
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return true;
+            return user;
         }
 
         public async Task<User?> AuthenticateUserAsync(UserLoginRequest userInfo)
