@@ -24,7 +24,7 @@ namespace Api.Services
                     Id = u.Id,
                     Username = u.Username
                 })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<User?> GetUserByUsername(string username)
@@ -60,11 +60,34 @@ namespace Api.Services
 
         public async Task<User?> AuthenticateUserAsync(UserLoginRequest userInfo)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == userInfo.Username);
-            if (user == null) { return null; }
+            var user = await _context.Users
+                .Include(u => u.Auth)
+                .SingleOrDefaultAsync(u => u.Username == userInfo.Username);
+            if (user == null)
+            {
+                Console.WriteLine(userInfo.Username);
+                return null;
+            }
+
+            if (DateTime.Now < user.Auth.LockUntil)
+            {
+                return null;
+            }
 
             bool verified = PasswordHelper.VerifyPasswordHash(userInfo.Password, user.Auth.PasswordHash, user.Auth.PasswordSalt);
-            return verified ? user : null;
+            if (!verified)
+            {
+                if (++user.Auth.FailedAttempts >= 10)
+                {
+                    user.Auth.LockUntil = DateTime.UtcNow.AddMinutes(5 * (user.Auth.FailedAttempts - 9));
+                }
+                await _context.SaveChangesAsync();
+                return null;
+            }
+            user.Auth.LastLogin = DateTime.UtcNow;
+            user.Auth.FailedAttempts = 0;
+            await _context.SaveChangesAsync();
+            return user;
         }
     }
 }
