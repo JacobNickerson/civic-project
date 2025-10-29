@@ -46,6 +46,7 @@ namespace Api.Services
             var user = new User
             {
                 Username = userInfo.Username,
+                Name = userInfo.Name,
                 Email = userInfo.Email,
                 Auth = new Auth
                 {

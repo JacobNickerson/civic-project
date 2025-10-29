@@ -16,6 +16,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 ```json
 {
     "username": "example_user",
+    "name": "Example User",
     "email": "example@email.com",
     "password": "P@ssw0rd!"
 }
