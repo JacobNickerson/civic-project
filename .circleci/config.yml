@@ -49,6 +49,7 @@ jobs:
           command: "export PATH=\"$PATH:/root/.dotnet/tools\" && dotnet ef database update --project Api/Api.csproj"
       - run:
           name: "Run tests"
+          requires: "Apply database migrations"
           working_directory: ~/project/backend
           command: "dotnet test TVBackend.sln --configuration Release -tl:off"
 

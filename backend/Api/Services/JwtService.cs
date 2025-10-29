@@ -17,7 +17,7 @@ namespace Api.Controllers
 
         public string GenerateJwt(User user)
         {
-            var key = Encoding.ASCII.GetBytes(_config.SecretKey);
+            var key = Encoding.ASCII.GetBytes(_config.Key);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(

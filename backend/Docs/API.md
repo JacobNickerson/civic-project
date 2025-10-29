@@ -6,7 +6,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 ---
 
 ## User Authentication
-### GET `/{id}`
+### GET `/users/{id}`
 **Description:** Get a user by their ID
 
 **Responses:**
@@ -22,7 +22,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 ```
 404 Not Found
 
-### POST `/register`
+### POST `/users/register`
 **Description:** Register a new user account
 
 **Request Body (JSON):**
@@ -53,7 +53,7 @@ will be set to null if left blank.
 400 Bad Request
 409 Conflict
 
-### Post `/login`
+### Post `/users/login`
 **Description:** Login using an existing user account and password
 
 **Request Body (JSON):**
@@ -74,3 +74,111 @@ will be set to null if left blank.
 ```
 400 Bad Request
 401 Unauthorized
+
+## User Posts
+### GET `/posts/`
+**Description:** Get a selection of posts based on a query, optionally sorted
+
+**Parameters:**
+|Name     |Type  |Required|Example    |Valid Values                                   |Default    |Description                                                                    |
+|:--------|:-----|:-------|:----------|:----------------------------------------------|:----------|:------------------------------------------------------------------------------|
+|page     |int   |true    |1          |page > 0                                       |1          |Group posts into groups of pageSize size and return the group with index `page`|
+|pageSize |int   |true    |10         |pageSize > 0                                   |10         |Determine the size of group for grouping posts into pages                      |
+|sortBy   |string|true    |"createdat"|"id","userid","content","createdat","updatedat"|"createdat"|Parameter to sort queried posts by                                             |
+|sortOrder|string|true    |"desc"     |"asc","desc"                                   |"desc"     |Order to sort posts in                                                         |
+|userId   |int   |false   |1          |userId >= 0                                    |null       |Optional parameter to limit posts to posts made by user with id `userid`       |
+|search   |string|false   |"findthis" |any string                                     |null       |Optional parameter to limit posts to posts containing the string `search`      |
+
+**Responses:**
+200 Ok
+```json
+{
+    "totalItems": 1,
+    "page": 1,
+    "pageSize": 10,
+    "totalPages": 1
+    "posts": [
+        {
+            "id": 1
+            "userId": 2,
+            "content": "Example post",
+            "createdAt": "2025-10-29T05:21:58.121288Z",
+            "updatedAt": null,
+            "reactions": [] 
+        }
+    ]
+}
+```
+400 Bad Request
+
+### PUT `/posts/create`
+**Description:** Create a post, requires a valid JWT
+
+**Request Body (JSON):**
+```json
+{
+    "id": 1
+    "userId": 1,
+    "content": "This is an example post!"
+    "createdAt": "2025-10-30T04:11:38.506352Z",
+    "updatedAt": null,
+    "isOfficial": false,
+    "isDeleted": false,
+    "author": null,
+    "reactions": []
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id" = 1,
+    "content" = "This is an example post!"
+}
+```
+400 BadRequest
+401 Unauthorized
+409 Conflict
+
+### POST `/posts/delete`
+**Description:** Delete a post, requires a valid JWT and a valid target
+
+**Request Body (JSON):**
+```json
+{
+    "id" = 1
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id" = 1
+}
+```
+401 Unauthorized
+404 Not Found
+
+### POST `/posts/update`
+**Description:** Update the contents of a post, requires a valid JWT and a valid target
+
+**Request Body (JSON):**
+```json
+{
+    "id" = 1,
+    "newcontent" = "This an updated post."
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id" = 1,
+    "newcontent" = "This an updated post."
+}
+```
+401 Unauthorized
+404 Not Found

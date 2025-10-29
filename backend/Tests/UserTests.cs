@@ -4,11 +4,7 @@ using Api.Services;
 using Api.Models;
 using Api.Controllers;
 using Api.Data;
-using Api.Password;
 
-using Microsoft.Extensions.Options;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 public class UserApiTests
 {
@@ -20,7 +16,7 @@ public class UserApiTests
         );
         var userService = new UserService(context);
         var jwtService = new JwtService(new JwtSettings {
-            SecretKey = "djsfadk!%adjs12!@$#89@#$120d71289;%@!327akl;3127%!%kl;%!21", // hows that for random
+            Key = "djsfadk!%adjs12!@$#89@#$120d71289;%@!327akl;3127%!%kl;%!21", // hows that for random
             Issuer = "TownVoice",
             Audience = "TownVoicers",
             ExpiryMinutes = 60
