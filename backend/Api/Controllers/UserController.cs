@@ -21,9 +21,9 @@ namespace Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null) return NotFound();
-            return Ok(new { user.Id, user.Username });
+            var userDTO = await _userService.GetUserByIdAsync(id);
+            if (userDTO == null) return NotFound();
+            return Ok(userDTO);
         }
 
         // POST api/example
@@ -41,12 +41,19 @@ namespace Api.Controllers
                 return BadRequest(new { message = errMessage });
             }
 
-            var isSuccessful = await _userService.RegisterUserAsync(userInfo);
-            if (!isSuccessful)
+            var user = await _userService.RegisterUserAsync(userInfo);
+            if (user == null) 
             {
                 return Conflict( new { message = "Username is already taken" });
             }
-            return Ok();
+            return Ok(new UserDTO
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Name = user.Profile.Name,
+                ProfilePic = user.Profile.Pic,
+                Bio = user.Profile.Bio
+            });
         }
 
         [HttpPost("login")]
@@ -63,7 +70,10 @@ namespace Api.Controllers
                 return Unauthorized("Invalid credentials");
             }
             var token = _jwtService.GenerateJwt(user);
-            return Ok(new { token, userId = user.Id });
+            return Ok(new UserLoginResponse {
+                Token = token,
+                UserId = user.Id
+            });
         }
     }
 }

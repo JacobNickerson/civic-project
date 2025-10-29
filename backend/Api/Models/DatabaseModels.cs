@@ -1,14 +1,16 @@
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+
 namespace Api.Models
 {
     public class User
     {
         public int Id { get; set; }
         public required string Username { get; set; }
-        public required string Name { get; set; }
         public required string Email { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public required Auth Auth { get; set; }
+        public required UserAuth Auth { get; set; }
+        public required UserProfile Profile { get; set; }
         public List<Message> Messages { get; set; } = new();
         public List<UserInConversation> Conversations { get; set; } = new();
         public List<Event> CreatedEvents { get; set; } = new();
@@ -17,7 +19,7 @@ namespace Api.Models
         public List<PostReaction> Reactions { get; set; } = new();
         public List<PetitionSignature> SignedPetitions { get; set; } = new();  
     }
-    public class Auth
+    public class UserAuth
     {
         public int UserId { get; set; }
         public required byte[] PasswordHash { get; set; } = Array.Empty<byte>();
@@ -26,6 +28,14 @@ namespace Api.Models
         public int FailedAttempts { get; set; }
         public DateTime LockUntil { get; set; }
 
+        public User? User { get; set; }
+    }
+    public class UserProfile
+    {
+        public int UserId { get; set; }
+        public required string Name { get; set; }
+        public string? Pic { get; set; }
+        public string? Bio { get; set; } 
         public User? User { get; set; }
     }
     public class Post
