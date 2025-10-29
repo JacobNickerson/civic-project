@@ -36,4 +36,8 @@ body {
     font-size: 18px;
     background-color: #0d87df;
     margin: 24px;
+    text-decoration: none;
+    color: white;
+    padding: 15px;
+    border-radius: 15px;
 }
