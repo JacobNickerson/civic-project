@@ -48,7 +48,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         string email = "test@tester.com";
         string password = "P@ssw0rd!";
         var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
-        var createUserResponse = await client.PostAsJsonAsync("/api/users/register", createUserRequest);
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
         createUserResponse.EnsureSuccessStatusCode();
 
         // Login and store JWT
@@ -122,7 +122,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         string email = "test@tester.com";
         string password = "P@ssw0rd!";
         var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
-        var createUserResponse = await client.PostAsJsonAsync("/api/users/register", createUserRequest);
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
         createUserResponse.EnsureSuccessStatusCode();
 
         // Login and store JWT
