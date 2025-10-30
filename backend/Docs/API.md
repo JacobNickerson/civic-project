@@ -13,7 +13,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 200 Ok
 ```json
 {
-    "id" = 1,
+    "id": 1,
     "username": "example_user",
     "name": "Example User",
     "profilepic": "https://optionalprofilepicturelink.com/",
@@ -22,7 +22,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 ```
 404 Not Found
 
-### POST `/users/register`
+### PUT `/users/register`
 **Description:** Register a new user account
 
 **Request Body (JSON):**
@@ -43,7 +43,7 @@ will be set to null if left blank.
 200 Ok
 ```json
 {
-    "id" = 1,
+    "id": 1,
     "username": "example_user",
     "name": "Example User",
     "profilepic": "https://optionalprofilepicturelink.com/",
@@ -53,7 +53,7 @@ will be set to null if left blank.
 400 Bad Request
 409 Conflict
 
-### Post `/users/login`
+### POST `/users/login`
 **Description:** Login using an existing user account and password
 
 **Request Body (JSON):**
@@ -133,8 +133,8 @@ will be set to null if left blank.
 200 Ok
 ```json
 {
-    "id" = 1,
-    "content" = "This is an example post!"
+    "id": 1,
+    "content": "This is an example post!"
 }
 ```
 400 BadRequest
@@ -147,7 +147,7 @@ will be set to null if left blank.
 **Request Body (JSON):**
 ```json
 {
-    "id" = 1
+    "id": 1
 }
 ```
 
@@ -155,7 +155,7 @@ will be set to null if left blank.
 200 Ok
 ```json
 {
-    "id" = 1
+    "id": 1
 }
 ```
 401 Unauthorized
@@ -167,8 +167,8 @@ will be set to null if left blank.
 **Request Body (JSON):**
 ```json
 {
-    "id" = 1,
-    "newcontent" = "This an updated post."
+    "id": 1,
+    "newcontent": "This an updated post."
 }
 ```
 
@@ -176,8 +176,8 @@ will be set to null if left blank.
 200 Ok
 ```json
 {
-    "id" = 1,
-    "newcontent" = "This an updated post."
+    "id": 1,
+    "newcontent": "This an updated post."
 }
 ```
 401 Unauthorized
