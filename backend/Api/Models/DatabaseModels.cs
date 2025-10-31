@@ -42,6 +42,7 @@ namespace Api.Models
     {
         public int Id { get; set; }
         public required int UserId { get; set; }
+        public int? ParentId { get; set; }
         public required string Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -49,6 +50,7 @@ namespace Api.Models
         public bool IsDeleted { get; set; }
 
         public User? Author { get; set; }
+        public Post? ParentPost { get; set; }
         public List<PostReaction> Reactions { get; set; } = new();
     }
     public class PostReaction

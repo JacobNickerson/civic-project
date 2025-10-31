@@ -7,7 +7,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 
 ## User Authentication
 ### GET `/users/{id}`
-**Description:** Get a user by their ID
+**Description:** Get a user by their ID.
 
 **Responses:**
 200 Ok
@@ -23,7 +23,7 @@ Base URL: https://PENDINGDOMAINNAME.com/api
 404 Not Found
 
 ### PUT `/users/register`
-**Description:** Register a new user account
+**Description:** Register a new user account.
 
 **Request Body (JSON):**
 ```json
@@ -54,7 +54,7 @@ will be set to null if left blank.
 409 Conflict
 
 ### POST `/users/login`
-**Description:** Login using an existing user account and password
+**Description:** Login using an existing user account and password.
 
 **Request Body (JSON):**
 ```json
@@ -77,7 +77,7 @@ will be set to null if left blank.
 
 ## User Posts
 ### GET `/posts/`
-**Description:** Get a selection of posts based on a query, optionally sorted
+**Description:** Get a selection of top level posts based on a query, optionally sorted.
 
 **Parameters:**
 |Name     |Type  |Required|Example    |Valid Values                                   |Default    |Description                                                                    |
@@ -112,7 +112,7 @@ will be set to null if left blank.
 400 Bad Request
 
 ### PUT `/posts/create`
-**Description:** Create a post, requires a valid JWT
+**Description:** Create a post, requires a valid JWT.
 
 **Request Body (JSON):**
 ```json
@@ -141,15 +141,9 @@ will be set to null if left blank.
 401 Unauthorized
 409 Conflict
 
-### POST `/posts/delete`
-**Description:** Delete a post, requires a valid JWT and a valid target
+### POST `/posts/{postId}/delete`
+**Description:** Delete a post, requires a valid JWT and a valid target. If a post is a "top-level" post, ie it has no parent, then all child posts are recursively deleted in the entire hierarchy.
 
-**Request Body (JSON):**
-```json
-{
-    "id": 1
-}
-```
 
 **Responses:**
 200 Ok
@@ -161,13 +155,12 @@ will be set to null if left blank.
 401 Unauthorized
 404 Not Found
 
-### POST `/posts/update`
-**Description:** Update the contents of a post, requires a valid JWT and a valid target
+### POST `/posts/{postId}/update`
+**Description:** Update the contents of a post, requires a valid JWT and a valid target.
 
 **Request Body (JSON):**
 ```json
 {
-    "id": 1,
     "newcontent": "This an updated post."
 }
 ```
@@ -181,4 +174,47 @@ will be set to null if left blank.
 }
 ```
 401 Unauthorized
+404 Not Found
+
+### POST `/posts/{postId}/reply`
+**Description:** Create a reply to an existing post or reply, requires a valid JWT and a valid target.
+
+**Request Body (JSON):**
+```json
+{
+    "content": "This a reply to another post."
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id": 2,
+    "content": "This a reply to another post."
+}
+```
+401 Unauthorized
+404 Not Found
+
+### POST `/posts/{postId}/replies`
+**Description:** Get all replies to a given post, requires a valid target. Deleted posts are also returned, but their contents are set to `null`.
+
+**Responses:**
+200 Ok
+```json
+{
+    [
+        {
+            "id": 2,
+            "content": "This a reply to another post."
+        },
+        {
+            "id": 3,
+            "content": "This is also a reply to another post."
+        }
+    ]
+}
+```
+400 Bad Request
 404 Not Found
