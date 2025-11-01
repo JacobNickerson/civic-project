@@ -6,6 +6,7 @@ using Api.Services;
 using System.Numerics;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Api.ServiceUtils;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Api.Controllers
 {
@@ -30,7 +31,7 @@ namespace Api.Controllers
             [FromQuery] string? search = null
         )
         {
-            var (returnCode,posts) = await _postsService.GetPosts(
+            var (returnCode, posts) = await _postsService.GetPostsAsync(
                 page, pageSize,
                 sortBy, sortOrder,
                 userId,
@@ -52,7 +53,7 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode,createdPost) = await _postsService.CreatePost(userId, post.Content);
+            var (returnCode, createdPost) = await _postsService.CreatePostAsync(userId, post.Content);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(createdPost);
@@ -69,7 +70,7 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode, deletedPost) = await _postsService.DeletePost(userId, postId);
+            var (returnCode, deletedPost) = await _postsService.DeletePostAsync(userId, postId);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(deletedPost);
@@ -86,13 +87,13 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode, updatedPost) = await _postsService.UpdatePost(userId, postId, post.NewContent);
+            var (returnCode, updatedPost) = await _postsService.UpdatePostAsync(userId, postId, post.NewContent);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(updatedPost);
         }
 
-        [HttpPut("{parentId}/reply")]
+        [HttpPut("{parentId}/replies")]
         [Authorize]
         public async Task<IActionResult> CreateReply(int parentId, [FromBody] CreatePostDTO post)
         {
@@ -103,7 +104,7 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode,createdPost) = await _postsService.CreateReply(userId, parentId, post.Content);
+            var (returnCode, createdPost) = await _postsService.CreateReplyAsync(userId, parentId, post.Content);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(createdPost);
@@ -112,10 +113,51 @@ namespace Api.Controllers
         [HttpGet("{parentId}/replies")]
         public async Task<IActionResult> GetReplies(int parentId)
         {
-            var (returnCode,posts) = await _postsService.GetReplies(parentId);
+            var (returnCode, posts) = await _postsService.GetRepliesAsync(parentId);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(posts);
+        }
+        [HttpPut("{postId}/reactions")]
+        [Authorize]
+        public async Task<IActionResult> CreateReaction(int postId, [FromBody] CreateReactionDTO react)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdStr == null)
+            {
+                return Unauthorized();
+            }
+            int userId = int.Parse(userIdStr);
+            var (returnCode, reaction) = await _postsService.CreateReactionAsync(userId, postId, react.Type);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(reaction);
+        }
+        [HttpDelete("{postId}/reactions")]
+        [Authorize]
+        public async Task<IActionResult> DeleteReaction(int postId, [FromBody] CreateReactionDTO react)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdStr == null)
+            {
+                return Unauthorized();
+            }
+            int userId = int.Parse(userIdStr);
+            var (returnCode, reaction) = await _postsService.DeleteReactionAsync(userId, postId, react.Type);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(reaction);
+        }
+        [HttpGet("{postId}/reactions")]
+        [Authorize]
+        // As of right now, this doesn't use any redis caching. For the sake of developing all features on time,
+        // it simply queries database every time. Oops.
+        public async Task<IActionResult> GetReactionAggregates(int postId)
+        {
+            var (returnCode, reactions) = await _postsService.GetReactionAggregatesAsync(postId);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(reactions);
         }
     }
 }
