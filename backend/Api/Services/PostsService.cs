@@ -49,7 +49,8 @@ namespace Api.Services
                 : query.OrderBy(sortBy + " descending");
             query = query
                 .Where(p => !p.IsDeleted)
-                .Where(p => !p.IsOfficial);
+                .Where(p => !p.IsOfficial)
+                .Where(p => p.ParentId == null);
             var totalItems = await query.CountAsync();
             var posts = await query
                 .Skip((page - 1) * pageSize)
@@ -91,15 +92,20 @@ namespace Api.Services
                 Content = post.Content,
             });
         }
-        public async Task<(ServiceReturnCode, DeletePostDTO?)> DeletePost(int userId, DeletePostDTO post)
+        public async Task<(ServiceReturnCode, DeletePostDTO?)> DeletePost(int userId, int postId)
         {
             var postToDelete = await _context
                 .Posts
-                .FirstOrDefaultAsync(p => p.Id == post.Id);
+                .FirstOrDefaultAsync(p => p.Id == postId);
             if (postToDelete == null) { return (ServiceReturnCode.NotFound, null); }
             if (postToDelete.UserId != userId) { return (ServiceReturnCode.Unauthorized, null); }
             if (postToDelete.IsDeleted) { return (ServiceReturnCode.NotFound, null); }
             postToDelete.IsDeleted = true;
+            postToDelete.UpdatedAt = DateTime.UtcNow;
+            if (postToDelete.ParentId == null) // top level post, delete children
+            {
+                await RecursivelyDeleteReplies(postToDelete.Id);
+            }
             await _context.SaveChangesAsync();
             return (ServiceReturnCode.Success, new DeletePostDTO
             {
@@ -107,22 +113,85 @@ namespace Api.Services
             });
         }
 
-        public async Task<(ServiceReturnCode, UpdatePostDTO?)> UpdatePost(int userId, UpdatePostDTO post)
+        public async Task<(ServiceReturnCode, UpdatePostDTO?)> UpdatePost(int userId, int postId, string newContent)
         {
             var postToUpdate = await _context
                 .Posts
-                .FirstOrDefaultAsync(p => p.Id == post.Id);
+                .FirstOrDefaultAsync(p => p.Id == postId);
             if (postToUpdate == null) { return (ServiceReturnCode.NotFound, null); }
             if (postToUpdate.UserId != userId) { return (ServiceReturnCode.Unauthorized, null); }
             if (postToUpdate.IsDeleted) { return (ServiceReturnCode.NotFound, null); }
             postToUpdate.UpdatedAt = DateTime.UtcNow;
-            postToUpdate.Content = post.NewContent;
+            postToUpdate.Content = newContent;
             await _context.SaveChangesAsync();
             return (ServiceReturnCode.Success, new UpdatePostDTO
             {
                 Id = postToUpdate.Id,
                 NewContent = postToUpdate.Content
             });
+        }
+        public async Task<(ServiceReturnCode, CreatePostDTO?)> CreateReply(int userId, int parentId, string content)
+        {
+            if (String.IsNullOrEmpty(content)) { return (ServiceReturnCode.InvalidInput,null); }
+            var parentPost = await _context.Posts.FirstOrDefaultAsync(p => p.Id == parentId);
+            if (parentPost == null)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            if (parentPost.IsDeleted)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            var post = new Post
+            {
+                UserId = userId,
+                ParentId = parentId, 
+                Content = content,
+                CreatedAt = DateTime.UtcNow,
+                ParentPost = parentPost
+            };
+            var createdPost = await _context.AddAsync(post);
+            if (createdPost == null) { return (ServiceReturnCode.InternalError,null); }
+            await _context.SaveChangesAsync();
+            return (ServiceReturnCode.Success, new CreatePostDTO
+            {
+                Id = post.Id,
+                Content = post.Content
+            });
+        }
+        public async Task<(ServiceReturnCode, List<PostDTO>)> GetReplies(int parentId)
+        {
+            var replies = await _context.Posts
+                .Where(p => p.ParentId == parentId)
+                .Select(p => new PostDTO
+                {
+                    Id = p.Id,
+                    Content = p.IsDeleted ? null : p.Content,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    Author = p!.Author!.Username,
+                    Reactions = p.Reactions
+                }).ToListAsync();
+            return (ServiceReturnCode.Success, replies);
+        } 
+        private async Task<bool> RecursivelyDeleteReplies(int parentId)
+        {
+            await _context.Posts
+            .Where(p => p.ParentId == parentId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.IsDeleted, true)
+                .SetProperty(p => p.UpdatedAt, DateTime.UtcNow)
+            );
+
+            var childIds = await _context.Posts
+                .Where(p => p.ParentId == parentId)
+                .Select(p => p.Id)
+                .ToListAsync();
+            foreach (var childId in childIds)
+            {
+                await RecursivelyDeleteReplies(childId);
+            }
+            return true;
         }
     }
 }

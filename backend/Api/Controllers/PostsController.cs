@@ -58,9 +58,9 @@ namespace Api.Controllers
             return Ok(createdPost);
         }
 
-        [HttpPost("delete")]
+        [HttpPost("{postId}/delete")]
         [Authorize]
-        public async Task<IActionResult> DeletePost([FromBody] DeletePostDTO post)
+        public async Task<IActionResult> DeletePost(int postId)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdStr == null)
@@ -69,15 +69,15 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode, deletedPost) = await _postsService.DeletePost(userId, post);
+            var (returnCode, deletedPost) = await _postsService.DeletePost(userId, postId);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(deletedPost);
         }
 
-        [HttpPost("update")]
+        [HttpPost("{postId}/update")]
         [Authorize]
-        public async Task<IActionResult> UpdatePost([FromBody] UpdatePostDTO post)
+        public async Task<IActionResult> UpdatePost(int postId, [FromBody] UpdatePostDTO post)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdStr == null)
@@ -86,10 +86,36 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode, updatedPost) = await _postsService.UpdatePost(userId, post);
+            var (returnCode, updatedPost) = await _postsService.UpdatePost(userId, postId, post.NewContent);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(updatedPost);
+        }
+
+        [HttpPut("{parentId}/reply")]
+        [Authorize]
+        public async Task<IActionResult> CreateReply(int parentId, [FromBody] CreatePostDTO post)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdStr == null)
+            {
+                return Unauthorized();
+            }
+            int userId = int.Parse(userIdStr);
+
+            var (returnCode,createdPost) = await _postsService.CreateReply(userId, parentId, post.Content);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(createdPost);
+        }
+
+        [HttpGet("{parentId}/replies")]
+        public async Task<IActionResult> GetReplies(int parentId)
+        {
+            var (returnCode,posts) = await _postsService.GetReplies(parentId);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(posts);
         }
     }
 }

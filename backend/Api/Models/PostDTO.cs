@@ -11,7 +11,7 @@ namespace Api.Models
     public class PostDTO
     {
         public int Id { get; set; }
-        public required string Content { get; set; }
+        public string? Content { get; set; }
         public required DateTime CreatedAt { get; set; }
         public required DateTime? UpdatedAt { get; set; }
         public required string Author { get; set; }
@@ -24,11 +24,11 @@ namespace Api.Models
     }
     public class DeletePostDTO
     {
-        public required int Id { get; set; }
+        public int Id { get; set; }
     }
     public class UpdatePostDTO
     {
-        public required int Id { get; set; }
+        public int Id { get; set; }
         public required string NewContent { get; set; }
     }
 }
