@@ -1,4 +1,4 @@
-.sign-in-screen {
+.create-account {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -11,23 +11,19 @@
     background-color: white;
     font-family: Arial, Helvetica, sans-serif;
 
-    h1 {
-        color: black;
-    }
-
-    .sign-in-header {
-        font-size: 35px;
-        margin: 20px;
-        color: #333;
-    }
-
-    .sign-in-box {
+    .account-info-box {
         border-radius: 15px;
         box-shadow: 0px 0px 5px 2px rgb(199, 199, 199);
         min-height: 10vh;
         width: 40vw;
         margin: 20px;
         padding: 20px;
+    }
+
+    .create-account-header {
+        font-size: 35px;
+        margin: 20px;
+        color: #333;
     }
 
     .credential-input {
@@ -55,11 +51,11 @@
         background-color: #0b76c2;
     }
 
-    .create-account-btn {
+    .sign-in-link {
         color: #0d87df;
     }
 
-    .create-account-btn:hover {
+    .sign-in-link:hover {
         color: #0966a8;
     }
 }
