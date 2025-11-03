@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router';
 import { useState, useEffect } from 'react';
 import './CreateAccount.css';
 
@@ -10,6 +10,8 @@ function CreateAccount() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
+  const [error, setError] = useState('');
+  const [addingUser, setAddingUser] = useState(false);
 
   const addUser = async(e) => {
     e.preventDefault();
@@ -27,13 +29,37 @@ function CreateAccount() {
       return;
     }
 
-    name = name.trim(); // Remove unnecessary spaces from name
-    userName = userName.trim(); // Remove unnecessary spaces from username
+    setName(name.trim()); // Remove unnecessary spaces from name
+    setUserName(userName.trim()); // Remove unnecessary spaces from username
 
-    // try {
-    //   const response = await fetch(`${baseUrl}/users/register`,)
-    // }
+    try {
+      setAddingUser(true);
+      const response = await fetch(`${baseUrl}/users/register`, {
+        method: 'PUT',
+        headers: {
+          'username': userName,
+          'name': name,
+          'email': email,
+          'password': password,
+          'profilepic': '',
+          'bio': ''
+        }
+      });
 
+      if(!response.ok) {
+        throw new Error('Failed to add user.');
+      }
+    } catch(e) {
+      setError(e.message);
+      alert('Failed to add user.');
+      setAddingUser(false);
+      return;
+    } finally {
+      setAddingUser(false);
+    }
+
+    alert(`Welcome to TownVoice, ${name}!`);
+    useNavigate('/sign-in');
   }
 
   return (
@@ -53,6 +79,7 @@ function CreateAccount() {
                   onChange={(e) => setConfirmPassword(e.target.value)}></input><br></br>
                 <input type='submit' value='Submit' className='submit-btn'></input>
             </form>
+            <Link className='sign-in-link' to='/sign-in'>Back to sign-in</Link>
         </div>
     </div>
   )

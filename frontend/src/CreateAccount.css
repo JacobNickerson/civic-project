@@ -50,4 +50,12 @@
     .submit-btn:hover {
         background-color: #0b76c2;
     }
+
+    .sign-in-link {
+        color: #0d87df;
+    }
+
+    .sign-in-link:hover {
+        color: #0966a8;
+    }
 }
