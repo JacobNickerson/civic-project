@@ -1,5 +1,5 @@
 .home-screen {
-    max-width: 1280px;
+    min-width: 100vw;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -37,5 +37,9 @@
         color: white;
         padding: 15px;
         border-radius: 15px;
+    }
+
+    .go-to-sign-in-btn:hover {
+        background-color: #0b76c2;
     }
 }
