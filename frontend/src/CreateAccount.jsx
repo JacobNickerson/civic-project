@@ -20,6 +20,18 @@ function CreateAccount() {
       alert('Name is required! Please enter your full name to create an account.');
       return;
     }
+    if(email.trim().length <= 0) {
+      alert('Email is required! Please enter your email to create an account.');
+      return;
+    }
+    if(userName.trim().length <= 0) {
+      alert('Username is required! Please enter a username to create an account.');
+      return;
+    }
+    if(password.trim().length <= 0) {
+      alert('Password cannot be empty!');
+      return;
+    }
     if(password !== confirmPassword) {
       alert('Passwords do not match. Please ensure both passwords are identical and try again.');
       return;
