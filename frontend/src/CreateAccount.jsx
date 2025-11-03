@@ -48,7 +48,7 @@ function CreateAccount() {
       setAddingUser(true);
       const response = await fetch(`${baseUrl}/users/register`, {
         method: 'PUT',
-        headers: {
+        body: {
           'username': userName,
           'name': name,
           'email': email,
