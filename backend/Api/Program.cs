@@ -10,9 +10,22 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+var frontendOrigin = builder.Configuration
+    .GetSection("FrontendOrigin")
+    .Get<string>();
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy
+                .WithOrigins(frontendOrigin!)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+});
 
 // Configuring JWT
 builder.Services.Configure<JwtSettings>(
@@ -53,16 +66,16 @@ builder.Services.AddDbContext<TVDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseRouting();
+app.UseCors("AllowFrontend");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
 // app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
