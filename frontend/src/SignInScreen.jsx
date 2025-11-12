@@ -30,10 +30,14 @@ function SignInScreen() {
             setSigningIn(true);
             const response = await fetch(`${baseUrl}/users/login`, {
                 method: 'POST',
-                body: {
+                credentials: 'include',
+                headers: {
+                  'content-type': 'application/json'
+                },
+                body: JSON.stringify({
                     'username': userName,
                     'password': password
-                }
+                })
             });
 
             if(!response.ok) {
