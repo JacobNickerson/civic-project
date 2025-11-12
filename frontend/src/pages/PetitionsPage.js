@@ -7,7 +7,7 @@ import CreatePetitionForm from '../components/CreatePetitionForm';
 //import axios from 'axios';
 
 // TODO: When integrating backend, create a .env file in the project root:
-// REACT_APP_API_BASE_URL=https://localhost:7060/api
+// VITE_API_BASE_URL=https://localhost:7060/api
 
 export default function PetitionsPage() {
   // MOCK DATA: replace later with backend fetch
@@ -25,7 +25,7 @@ export default function PetitionsPage() {
   /*
 useEffect(() => {
   axios
-    .get(`${process.env.REACT_APP_API_BASE_URL}/petitions`)
+    .get(`${import.meta.env.VITE_API_BASE_URL}/petitions`)
     .then(res => setPetitions(res.data))
     .catch(err => console.error('Failed to load petitions:', err));
 }, []);
@@ -52,7 +52,7 @@ useEffect(() => {
 async function handleCreate({ title, description }) {
   try {
     const { data } = await axios.post(
-      `${process.env.REACT_APP_API_BASE_URL}/petitions`,
+      `${import.meta.env.VITE_API_BASE_URL}/petitions`,
       { title, description }
     );
     // backend returns the new petition object
@@ -78,10 +78,10 @@ async function handleCreate({ title, description }) {
 async function handleSign(id) {
   try {
     await axios.post(
-      `${process.env.REACT_APP_API_BASE_URL}/petitions/${id}/sign` 
+      `${import.meta.env.VITE_API_BASE_URL}/petitions/${id}/sign` 
     );
     //re-fetch all petitions if backend handles signature increment: assumes backend handles signatures!
-    // const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/petitions`);
+    // const { data } = await axios.get(`${import.meta.env.VITE_APP_API_BASE_URL}/petitions`);
     // setPetitions(data);
   } catch (err) {
     console.error('Failed to sign petition:', err);

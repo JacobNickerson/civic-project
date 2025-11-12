@@ -9,7 +9,7 @@ When integrating with the backend, create a .env file in the project root direct
 REACT_APP_API_BASE_URL=https://localhost:7060/api 
 
 This defines the base URL for all API requests. 
-React automatically injects variables that begin with REACT_APP_ into your app at build time. 
+The Vite build tool for React automatically injects variables that begin with VITE_ into your app at build time. 
 
 2. Required Imports 
 
@@ -34,7 +34,7 @@ Uncomment the following block (already included in the file):
 
 useEffect(() => { 
  axios 
-   .get(`${process.env.REACT_APP_API_BASE_URL}/petitions`) 
+   .get(`${import.meta.env.VITE_API_BASE_URL}/petitions`) 
    .then(res => setPetitions(res.data)) 
    .catch(err => console.error('Failed to load petitions:', err)); 
 }, []); 
@@ -66,7 +66,7 @@ Delete or comment out the above function, then uncomment this block:
 async function handleCreate({ title, description }) { 
  try { 
    const { data } = await axios.post( 
-     `${process.env.REACT_APP_API_BASE_URL}/petitions`, 
+     `${import.meta.env.VITE_API_BASE_URL}/petitions`, 
      { title, description } 
    ); 
    setPetitions(prev => [data, ...prev]); 
@@ -97,9 +97,9 @@ Delete or comment out the mock version and uncomment this block:
 async function handleSign(id) { 
  try { 
    await axios.post( 
-     `${process.env.REACT_APP_API_BASE_URL}/petitions/${id}/sign` 
+     `${import.meta.env.VITE_API_BASE_URL}/petitions/${id}/sign` 
    ); 
-   const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/petitions`); 
+   const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/petitions`); 
    setPetitions(data); 
  } catch (err) { 
    console.error('Failed to sign petition:', err); 
