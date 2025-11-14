@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Text;
+using System.Text.Json;
 
 public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
 {
@@ -136,7 +138,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
             Email = "tester@test.com",
             Password = "P@ssw0rd!",
         });
-        var (_, newPost) = await postsService.CreatePost(newUser!.Id, "Not Hello World!");
+        var (_, newPost) = await postsService.CreatePostAsync(newUser!.Id, "Not Hello World!");
         int postId = newPost!.Id;
 
         // Attempt to edit and delete
@@ -189,7 +191,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "I'm replying to a post!"
         };
-        var makeReplyResponse = await client.PutAsJsonAsync($"/api/posts/{postId}/reply", replyRequest);
+        var makeReplyResponse = await client.PutAsJsonAsync($"/api/posts/{postId}/replies", replyRequest);
         var makeReplyResult = await makeReplyResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
         var replyId = makeReplyResult!.Id;
 
@@ -227,14 +229,14 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
             Password = "P@ssw0rd!",
             Email = "test@test.com"
         });
-        var (_,post) = await postsService.CreatePost(user!.Id, "Hello world!");
+        var (_,post) = await postsService.CreatePostAsync(user!.Id, "Hello world!");
 
         // Reply without JWT
         var replyRequest = new CreatePostDTO
         {
             Content = "Hello world!"
         };
-        var makeReplyResponse = await client.PutAsJsonAsync($"/api/posts/{post!.Id}/reply", replyRequest);
+        var makeReplyResponse = await client.PutAsJsonAsync($"/api/posts/{post!.Id}/replies", replyRequest);
         Assert.Equal(HttpStatusCode.Unauthorized, makeReplyResponse.StatusCode);
     }
     [Fact]
@@ -271,10 +273,10 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         var postResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
         postResponse.EnsureSuccessStatusCode();
         var postResult = await postResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
-        var reply1Response = await client.PutAsJsonAsync($"api/posts/{postResult!.Id}/reply", postRequest);
+        var reply1Response = await client.PutAsJsonAsync($"api/posts/{postResult!.Id}/replies", postRequest);
         reply1Response.EnsureSuccessStatusCode();
         var reply1Result = await reply1Response.Content.ReadFromJsonAsync<CreatePostDTO>();
-        var reply2Response = await client.PutAsJsonAsync($"api/posts/{reply1Result!.Id}/reply", postRequest);
+        var reply2Response = await client.PutAsJsonAsync($"api/posts/{reply1Result!.Id}/replies", postRequest);
         reply2Response.EnsureSuccessStatusCode();
         var reply2Result = await reply2Response.Content.ReadFromJsonAsync<CreatePostDTO>();
 
@@ -324,10 +326,10 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         var postResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
         postResponse.EnsureSuccessStatusCode();
         var postResult = await postResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
-        var reply1Response = await client.PutAsJsonAsync($"api/posts/{postResult!.Id}/reply", postRequest);
+        var reply1Response = await client.PutAsJsonAsync($"api/posts/{postResult!.Id}/replies", postRequest);
         reply1Response.EnsureSuccessStatusCode();
         var reply1Result = await reply1Response.Content.ReadFromJsonAsync<CreatePostDTO>();
-        var reply2Response = await client.PutAsJsonAsync($"api/posts/{reply1Result!.Id}/reply", postRequest);
+        var reply2Response = await client.PutAsJsonAsync($"api/posts/{reply1Result!.Id}/replies", postRequest);
         reply2Response.EnsureSuccessStatusCode();
         var reply2Result = await reply2Response.Content.ReadFromJsonAsync<CreatePostDTO>();
 
@@ -342,6 +344,101 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         Assert.True(post2!.IsDeleted);
         var post3 = await dbContext.Posts.FirstOrDefaultAsync(p => p.Id == reply2Result!.Id);
         Assert.False(post3!.IsDeleted);
+    }
+    [Fact]
+    public async Task CreateDeletePostReplies()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        ClearDatabase(dbContext);
+        // Arrange
+        // Create user
+        string username = "john";
+        string name = "John Dingle";
+        string email = "test@tester.com";
+        string password = "P@ssw0rd!";
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
+        createUserResponse.EnsureSuccessStatusCode();
+
+        // Login and store JWT
+        var loginRequest = new UserLoginRequest { Username = username, Password = password };
+        var loginResponse = await client.PostAsJsonAsync("/api/users/login", loginRequest);
+        loginResponse.EnsureSuccessStatusCode();
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<UserLoginResponse>();
+        string jwt = loginResult!.Token;
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+        // Create post
+        var postRequest = new CreatePostDTO
+        {
+            Content = "Hello world!"
+        };
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        makePostResponse.EnsureSuccessStatusCode();
+        var makePostResult = await makePostResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
+        var postId = makePostResult!.Id;
+
+        // Create reactions
+        var likeRequest = new CreateReactionDTO
+        {
+            PostId = postId,
+            Type = ReactionType.Like
+        };
+        var dislikeRequest = new CreateReactionDTO
+        {
+            PostId = postId,
+            Type = ReactionType.Dislike
+        };
+        var heartRequest = new CreateReactionDTO
+        {
+            PostId = postId,
+            Type = ReactionType.Heart
+        };
+        var makeLikeResponse = await client.PutAsJsonAsync($"/api/posts/{postId}/reactions",likeRequest); 
+        makeLikeResponse.EnsureSuccessStatusCode();
+        var makeDislikeResponse = await client.PutAsJsonAsync($"/api/posts/{postId}/reactions",dislikeRequest); 
+        makeDislikeResponse.EnsureSuccessStatusCode();
+        var makeHeartResponse = await client.PutAsJsonAsync($"/api/posts/{postId}/reactions",heartRequest); 
+        makeHeartResponse.EnsureSuccessStatusCode();
+        
+        var reactionsResponse = await client.GetAsync($"/api/posts/{postId}/reactions");
+        reactionsResponse.EnsureSuccessStatusCode();
+        var reactionsResult = await reactionsResponse.Content.ReadFromJsonAsync<ReactionAggregateDTO>();
+        Assert.Equal(postId, reactionsResult!.PostId);
+        Assert.Equal(1, reactionsResult!.Likes);
+        Assert.Equal(1, reactionsResult!.Dislikes);
+        Assert.Equal(1, reactionsResult!.Hearts);
+
+        // no method for sending delete requests with JSON bodies
+        var deleteLikeRequest = new HttpRequestMessage(HttpMethod.Delete, $"/api/posts/{postId}/reactions")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(likeRequest), Encoding.UTF8, "application/json")
+        };
+        var deleteLikeResponse = await client.SendAsync(deleteLikeRequest);
+        deleteLikeResponse.EnsureSuccessStatusCode();
+        var deleteDislikeRequest = new HttpRequestMessage(HttpMethod.Delete, $"/api/posts/{postId}/reactions")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(dislikeRequest), Encoding.UTF8, "application/json")
+        };
+        var deleteDislikeResponse = await client.SendAsync(deleteDislikeRequest);
+        deleteDislikeResponse.EnsureSuccessStatusCode();
+        var deleteHeartRequest = new HttpRequestMessage(HttpMethod.Delete, $"/api/posts/{postId}/reactions")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(heartRequest), Encoding.UTF8, "application/json")
+        };
+        var deleteHeartResponse = await client.SendAsync(deleteHeartRequest);
+        deleteHeartResponse.EnsureSuccessStatusCode();
+
+        reactionsResponse = await client.GetAsync($"/api/posts/{postId}/reactions");
+        reactionsResponse.EnsureSuccessStatusCode();
+        reactionsResult = await reactionsResponse.Content.ReadFromJsonAsync<ReactionAggregateDTO>();
+        Assert.Equal(postId, reactionsResult!.PostId);
+        Assert.Equal(0, reactionsResult!.Likes);
+        Assert.Equal(0, reactionsResult!.Dislikes);
+        Assert.Equal(0, reactionsResult!.Hearts);
+
     }
     public void Dispose()
     {

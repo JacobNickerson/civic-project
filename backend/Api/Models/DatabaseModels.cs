@@ -53,15 +53,22 @@ namespace Api.Models
         public Post? ParentPost { get; set; }
         public List<PostReaction> Reactions { get; set; } = new();
     }
+    public enum ReactionType
+    {
+        Like = 0,
+        Dislike,
+        Heart
+    }
     public class PostReaction
     {
+        public int Id { get; set; }
         public required int UserId { get; set; }
         public required int PostId { get; set; }
-        public required string ReactionType { get; set; }
+        public required ReactionType Type { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public required User Author { get; set; }
-        public required Post Post { get; set; }
+        public User? Author { get; set; }
+        public Post? Post { get; set; }
     }
     public enum PetitionStatus
     {

@@ -3,6 +3,7 @@ using System;
 using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(TVDbContext))]
-    partial class TVDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251101034620_ReactionTypeEnum")]
+    partial class ReactionTypeEnum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -110,8 +113,7 @@ namespace Api.Migrations
 
                     b.HasKey("UserId", "EventId");
 
-                    b.HasIndex("EventId", "UserId")
-                        .IsUnique();
+                    b.HasIndex("EventId");
 
                     b.ToTable("eventfollows");
                 });
@@ -245,12 +247,13 @@ namespace Api.Migrations
 
             modelBuilder.Entity("Api.Models.PostReaction", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("UserId")
                         .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnName("userid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer")
+                        .HasColumnName("postid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -258,25 +261,14 @@ namespace Api.Migrations
                         .HasColumnName("createdat")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("PostId")
-                        .HasColumnType("integer")
-                        .HasColumnName("postid");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("type");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("userid");
+                    b.HasKey("UserId", "PostId");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("PostId", "UserId", "Type")
-                        .IsUnique();
+                    b.HasIndex("PostId");
 
                     b.ToTable("postreactions");
                 });
@@ -369,9 +361,6 @@ namespace Api.Migrations
                     b.HasKey("UserId", "ConversationId");
 
                     b.HasIndex("ConversationId");
-
-                    b.HasIndex("UserId", "ConversationId")
-                        .IsUnique();
 
                     b.ToTable("conversationmembers");
                 });

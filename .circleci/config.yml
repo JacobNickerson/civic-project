@@ -37,8 +37,9 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: "Install dotnet-ef"
-          command: "dotnet tool install --global dotnet-ef"
+          name: "Install dotnet tools"
+          working_directory: ~/project/backend
+          command: "dotnet tool restore"
       - run:
           name: "Change username and password in appsettings"
           working_directory: ~/project/backend
