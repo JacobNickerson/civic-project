@@ -268,6 +268,66 @@ Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `h
 }
 ```
 404 Not Found
+## Official Posts
+Official posts are just a special type of post, most of their operations use the default post routes. The only different routes are shown below:
+
+### GET `/posts/official`
+**Description:** Get a selection of official posts based on a query, optionally sorted.
+
+**Parameters:**
+|Name     |Type  |Required|Example    |Valid Values                                   |Default    |Description                                                                    |
+|:--------|:-----|:-------|:----------|:----------------------------------------------|:----------|:------------------------------------------------------------------------------|
+|page     |int   |true    |1          |page > 0                                       |1          |Group posts into groups of pageSize size and return the group with index `page`|
+|pageSize |int   |true    |10         |pageSize > 0                                   |10         |Determine the size of group for grouping posts into pages                      |
+|sortBy   |string|true    |"createdat"|"id","userid","content","createdat","updatedat"|"createdat"|Parameter to sort queried posts by                                             |
+|sortOrder|string|true    |"desc"     |"asc","desc"                                   |"desc"     |Order to sort posts in                                                         |
+|userId   |int   |false   |1          |userId >= 0                                    |null       |Optional parameter to limit posts to posts made by user with id `userid`       |
+|search   |string|false   |"findthis" |any string                                     |null       |Optional parameter to limit posts to posts containing the string `search`      |
+
+**Responses:**
+200 Ok
+```json
+{
+    "totalItems": 1,
+    "page": 1,
+    "pageSize": 10,
+    "totalPages": 1
+    "posts": [
+        {
+            "id": 1
+            "userId": 2,
+            "content": "Example post",
+            "createdAt": "2025-10-29T05:21:58.121288Z",
+            "updatedAt": null,
+            "reactions": [] 
+        }
+    ]
+}
+```
+400 Bad Request
+
+### PUT `/posts/official`
+**Description:** Create an official post, requires a valid JWT and that the user account backed by the JWT is an official user.
+
+**Request Body (JSON):**
+```json
+{
+    "content": "This is an example post!"
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id": 1,
+    "content": "This is an example post!"
+}
+```
+400 BadRequest
+401 Unauthorized
+409 Conflict
+
 
 ## Petitions
 ### GET `/petitions`

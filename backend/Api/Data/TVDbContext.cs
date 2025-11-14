@@ -52,6 +52,9 @@ namespace Api.Data
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id);
             modelBuilder.Entity<User>()
+                .Property(u => u.IsOfficial)
+                .HasDefaultValue(false);
+            modelBuilder.Entity<User>()
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
         }
