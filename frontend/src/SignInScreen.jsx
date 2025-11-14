@@ -6,12 +6,15 @@ import './SignInScreen.css';
 function SignInScreen() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [baseUrl, setBaseUrl] = useState('');
+    const [baseUrl, setBaseUrl] = useState('http://localhost:5272/api');
     const [error, setError] = useState('');
     const [signingIn, setSigningIn] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const navigate = useNavigate();
 
     const signInUser = async(e) => {
         e.preventDefault();
+        let userAuthenticated = false;
 
         if(userName.trim().length <= 0) {
             alert('Username is required! Please enter your username.');
@@ -43,6 +46,11 @@ function SignInScreen() {
             if(!response.ok) {
                 throw new Error('Failed to sign in user.');
             }
+            if(response.ok) {
+                userAuthenticated = true;
+                console.log(response);
+                currentUser = response.body;
+            }
         } catch(e) {
             setError(e.message);
             alert('Failed to sign in. Please check that your username and password are correct.');
@@ -51,7 +59,9 @@ function SignInScreen() {
             setSigningIn(false);
         }
 
-        useNavigate('/TBD'); // route not created yet, likely will be to the dashboard w/ announcements and petitions
+        if(userAuthenticated) {
+            navigate('/dashboard', {state: {user: currentUser}});
+        }
     }
 
     return(

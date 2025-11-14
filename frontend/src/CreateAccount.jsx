@@ -9,12 +9,14 @@ function CreateAccount() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
+  const [baseUrl, setBaseUrl] = useState('http://localhost:5272/api');
   const [error, setError] = useState('');
   const [addingUser, setAddingUser] = useState(false);
+  const navigate = useNavigate();
 
   const addUser = async(e) => {
     e.preventDefault();
+    let userAuthenticated = false;
     
     if(name.trim().length <= 0) {
       alert('Name is required! Please enter your full name to create an account.');
@@ -65,6 +67,9 @@ function CreateAccount() {
       if(!response.ok) {
         throw new Error('Failed to add user.');
       }
+      if(response.ok) {
+        userAuthenticated = true;
+      }
     } catch(e) {
       setError(e.message);
       alert('Failed to add user.');
@@ -75,7 +80,9 @@ function CreateAccount() {
     }
 
     alert(`Welcome to TownVoice, ${name}!`);
-    useNavigate('/sign-in');
+    if(userAuthenticated == true) {
+      navigate('/sign-in');
+    }
   }
 
   return (
