@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models
 {
     public class PostQueryDTO
@@ -30,5 +32,18 @@ namespace Api.Models
     {
         public int Id { get; set; }
         public required string NewContent { get; set; }
+    }
+    public class CreateReactionDTO
+    {
+        public int PostId { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public required ReactionType Type { get; set; }
+    }
+    public class ReactionAggregateDTO
+    {
+        public int PostId { get; set; }
+        public int Likes { get; set; }
+        public int Dislikes { get; set; }
+        public int Hearts { get; set; }
     }
 }

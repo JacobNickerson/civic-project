@@ -176,7 +176,7 @@ will be set to null if left blank.
 401 Unauthorized
 404 Not Found
 
-### POST `/posts/{postId}/reply`
+### POST `/posts/{postId}/replies`
 **Description:** Create a reply to an existing post or reply, requires a valid JWT and a valid target.
 
 **Request Body (JSON):**
@@ -197,7 +197,7 @@ will be set to null if left blank.
 401 Unauthorized
 404 Not Found
 
-### POST `/posts/{postId}/replies`
+### GET `/posts/{postId}/replies`
 **Description:** Get all replies to a given post, requires a valid target. Deleted posts are also returned, but their contents are set to `null`.
 
 **Responses:**
@@ -217,4 +217,62 @@ will be set to null if left blank.
 }
 ```
 400 Bad Request
+404 Not Found
+
+### GET `/posts/{postId}/reactions`
+**Description:** Get all reaction aggregates to a given post, requires a valid target. 
+
+**Responses:**
+200 Ok
+```json
+{
+    "postid": 1,
+    "likes": 3,
+    "dislikes": 1,
+    "hearts": 2 
+}
+```
+404 Not Found
+
+### POST `/posts/{postId}/reactions`
+**Description:** Create a reaction to a specified post, requires a valid target and a valid JWT. 
+
+**Request Body (JSON):**
+```json
+{
+    "type": "like"
+}
+```
+Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `heart`.
+
+**Responses:**
+200 Ok
+```json
+{
+    "postid": 1,
+    "type": "like"
+}
+```
+404 Not Found
+409 Conflict
+
+### DELETE `/posts/{postId}/reactions`
+**Description:** Delete a reaction to a specified post, requires a valid target, a valid JWT, and that the specified reaction exists. 
+
+**Request Body (JSON):**
+```json
+{
+    "type": "like"
+}
+```
+Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `heart`.
+
+**Responses:**
+200 Ok
+```json
+{
+    "postid": 1,
+    "type": "like"
+}
+```
 404 Not Found
