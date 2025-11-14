@@ -91,6 +91,9 @@ namespace Api.Data
             modelBuilder.Entity<UserInConversation>()
                 .HasKey(uc => new { uc.UserId, uc.ConversationId });
             modelBuilder.Entity<UserInConversation>()
+                .HasIndex(uc => new { uc.UserId, uc.ConversationId })
+                .IsUnique();
+            modelBuilder.Entity<UserInConversation>()
                 .Property(cm => cm.JoinedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<UserInConversation>()
@@ -143,6 +146,9 @@ namespace Api.Data
                 .Property(ef => ef.IsNotified)
                 .HasDefaultValue(false);
             modelBuilder.Entity<EventFollow>()
+                .HasIndex(ef => new { ef.EventId, ef.UserId })
+                .IsUnique();
+            modelBuilder.Entity<EventFollow>()
                 .HasOne(ef => ef.User)
                 .WithMany(u => u.FollowedEvents)
                 .HasForeignKey(ef => ef.UserId)
@@ -176,10 +182,16 @@ namespace Api.Data
         private void ConfigurePostReactions(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PostReaction>()
-                .HasKey(pr => new { pr.UserId, pr.PostId });
+                .HasKey(pr => new { pr.Id });
+            modelBuilder.Entity<PostReaction>()
+                .Property(pr => pr.Type)
+                .HasConversion<string>();
             modelBuilder.Entity<PostReaction>()
                 .Property(pr => pr.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            modelBuilder.Entity<PostReaction>()
+                .HasIndex(pr => new { pr.PostId, pr.UserId, pr.Type })
+                .IsUnique();
             modelBuilder.Entity<PostReaction>()
                 .HasOne(pr => pr.Author)
                 .WithMany(u => u.Reactions)

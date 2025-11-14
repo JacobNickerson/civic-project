@@ -1,0 +1,79 @@
+/* Match the Petitions page container + spacing */
+.calendar-header h1 {
+  margin-bottom: 12px;
+}
+
+/* Month navigation area — centered */
+.month-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 32px;
+}
+
+.month-controls h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.month-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid #d4ddf0;
+  background: #f5f7ff;
+
+  /* center the arrow */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+
+  font-size: 20px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+
+  padding: 0;
+  margin: 0 24px;
+}
+
+/* Wrap grid so it stays centered inside the container */
+.calendar-grid-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+/* The calendar grid */
+.calendar-grid {
+  width: 100%;
+  max-width: 900px; /* same as .container width */
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 2px solid black;
+}
+
+.day-header {
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid black;
+  background: #eef0f4;
+}
+
+.day-cell {
+  height: 110px; /* for more square look */
+  border: 1px solid black;
+  padding: 8px;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* For empty cells (before the 1st day) */
+.day-cell:empty {
+  background: #fff;
+}
+
+

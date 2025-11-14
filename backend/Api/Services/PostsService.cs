@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq.Dynamic.Core;
 using System.Reflection;
 using Api.ServiceUtils;
+using Npgsql;
 
 /*
 TODO:
@@ -22,7 +23,7 @@ namespace Api.Services
         {
             _context = context;
         }
-        public async Task<(ServiceReturnCode, PostQueryDTO?)> GetPosts(
+        public async Task<(ServiceReturnCode, PostQueryDTO?)> GetPostsAsync(
             int page,
             int pageSize,
             string sortBy,
@@ -74,7 +75,7 @@ namespace Api.Services
                 }).ToList()
             });
         }
-        public async Task<(ServiceReturnCode, CreatePostDTO?)> CreatePost(int userId, string content)
+        public async Task<(ServiceReturnCode, CreatePostDTO?)> CreatePostAsync(int userId, string content)
         {
             if (String.IsNullOrEmpty(content)) { return (ServiceReturnCode.InvalidInput,null); }
             var post = new Post
@@ -92,7 +93,7 @@ namespace Api.Services
                 Content = post.Content,
             });
         }
-        public async Task<(ServiceReturnCode, DeletePostDTO?)> DeletePost(int userId, int postId)
+        public async Task<(ServiceReturnCode, DeletePostDTO?)> DeletePostAsync(int userId, int postId)
         {
             var postToDelete = await _context
                 .Posts
@@ -113,7 +114,7 @@ namespace Api.Services
             });
         }
 
-        public async Task<(ServiceReturnCode, UpdatePostDTO?)> UpdatePost(int userId, int postId, string newContent)
+        public async Task<(ServiceReturnCode, UpdatePostDTO?)> UpdatePostAsync(int userId, int postId, string newContent)
         {
             var postToUpdate = await _context
                 .Posts
@@ -130,7 +131,7 @@ namespace Api.Services
                 NewContent = postToUpdate.Content
             });
         }
-        public async Task<(ServiceReturnCode, CreatePostDTO?)> CreateReply(int userId, int parentId, string content)
+        public async Task<(ServiceReturnCode, CreatePostDTO?)> CreateReplyAsync(int userId, int parentId, string content)
         {
             if (String.IsNullOrEmpty(content)) { return (ServiceReturnCode.InvalidInput,null); }
             var parentPost = await _context.Posts.FirstOrDefaultAsync(p => p.Id == parentId);
@@ -159,7 +160,7 @@ namespace Api.Services
                 Content = post.Content
             });
         }
-        public async Task<(ServiceReturnCode, List<PostDTO>)> GetReplies(int parentId)
+        public async Task<(ServiceReturnCode, List<PostDTO>)> GetRepliesAsync(int parentId)
         {
             var replies = await _context.Posts
                 .Where(p => p.ParentId == parentId)
@@ -174,6 +175,79 @@ namespace Api.Services
                 }).ToListAsync();
             return (ServiceReturnCode.Success, replies);
         } 
+        public async Task<(ServiceReturnCode, CreateReactionDTO?)> CreateReactionAsync(int userId, int postId, ReactionType type)
+        {
+            var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+            if (post == null)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            if (post.IsDeleted)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            var reaction = await _context.PostReactions.AddAsync(new PostReaction
+            {
+                UserId = userId,
+                PostId = postId,
+                Type = type,
+                CreatedAt = DateTime.UtcNow
+            });
+            if (reaction == null) { return (ServiceReturnCode.InternalError,null); }
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            when (ex.InnerException is PostgresException pg && pg.SqlState == "23505") // code for unique violation
+            {
+                return (ServiceReturnCode.Conflict, null);
+            }
+            return (ServiceReturnCode.Success, new CreateReactionDTO
+            {
+                PostId = postId,
+                Type = type
+            });
+        }
+        public async Task<(ServiceReturnCode, CreateReactionDTO?)> DeleteReactionAsync(int userId, int postId, ReactionType type)
+        {
+            var reaction = await _context.PostReactions
+                .Where(pr =>
+                    pr.UserId == userId &&
+                    pr.PostId == postId &&
+                    pr.Type == type)
+                .FirstOrDefaultAsync();
+            if (reaction == null)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            _context.PostReactions.Remove(reaction);
+            await _context.SaveChangesAsync();
+            return (ServiceReturnCode.Success, new CreateReactionDTO
+            {
+                PostId = postId,
+                Type = type
+            });
+        }
+        public async Task<(ServiceReturnCode, ReactionAggregateDTO?)> GetReactionAggregatesAsync(int postId)
+        {
+            var counts = await _context.Posts
+            .Where(p => p.Id == postId)
+            .Select(p => new ReactionAggregateDTO
+            {
+                PostId = p.Id,
+                Likes = p.Reactions.Count(r => r.Type == ReactionType.Like),
+                Dislikes = p.Reactions.Count(r => r.Type == ReactionType.Dislike),
+                Hearts = p.Reactions.Count(r => r.Type == ReactionType.Heart)
+            })
+            .FirstOrDefaultAsync();
+            if (counts == null)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            return (ServiceReturnCode.Success, counts);
+        }
+        // Helpers
         private async Task<bool> RecursivelyDeleteReplies(int parentId)
         {
             await _context.Posts
