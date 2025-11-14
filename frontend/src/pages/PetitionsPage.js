@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import PetitionCard from '../components/PetitionCard';
 import CreatePetitionForm from '../components/CreatePetitionForm';
+import './PetitionsPage.css';
+
 
 // TODO: uncomment when you integrate!! 
 //import { useEffect, useMemo, useState } from 'react';
