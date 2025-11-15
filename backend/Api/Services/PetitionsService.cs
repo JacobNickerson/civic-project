@@ -23,7 +23,7 @@ namespace Api.Services
         {
             _context = context;
         }
-        public async Task<(ServiceReturnCode, PostQueryDTO?)> GetPetitionsAsync(
+        public async Task<(ServiceReturnCode, PetitionQueryDTO?)> GetPetitionsAsync(
             int page,
             int pageSize,
             string sortBy,
@@ -58,20 +58,20 @@ namespace Api.Services
                 .Take(pageSize)
                 .Include(p => p.Author)
                 .ToListAsync();
-            return (ServiceReturnCode.Success, new PostQueryDTO
+            return (ServiceReturnCode.Success, new PetitionQueryDTO
             {
                 TotalItems = totalItems,
                 Page = page,
                 PageSize = pageSize,
                 TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
-                Posts = posts.Select(p => new PostDTO
+                Petitions = posts.Select(p => new PetitionDTO
                 {
                     Id = p.Id,
                     Content = p.Content,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
                     Author = p!.Author!.Username,
-                    Reactions = p.Reactions
+                    SignatureCount = p.SignatureCount
                 }).ToList()
             });
         }
@@ -113,6 +113,64 @@ namespace Api.Services
             return (ServiceReturnCode.Success, new DeletePetitionDTO
             {
                 Id = petitionToDelete.Id
+            });
+        }
+        public async Task<(ServiceReturnCode, CreatePetitionSignatureDTO?)> CreatePetitionSignatureAsync(int userId, int petitionId)
+        {
+            Console.WriteLine("OK I'm in the service function");
+            var petition = await _context.Petitions.FirstOrDefaultAsync(p => p.Id == petitionId);
+            if (petition == null || petition.IsDeleted)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            // TODO: Re-enable once petition status updating is implemented
+            // if (petition.Status != PetitionStatus.Open)
+            // {
+            //     return (ServiceReturnCode.InvalidInput, null); // possibly change the return code
+            // }
+            var petitionSignature = await _context.PetitionSignatures.AddAsync(new PetitionSignature
+            {
+                PetitionId = petitionId,
+                UserId = userId,
+            });
+            ++petition.SignatureCount;
+            if (petitionSignature == null) { return (ServiceReturnCode.InternalError,null); }
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            when (ex.InnerException is PostgresException pg && pg.SqlState == "23505") // code for unique violation
+            {
+                return (ServiceReturnCode.Conflict, null);
+            }
+            return (ServiceReturnCode.Success, new CreatePetitionSignatureDTO
+            {
+                UserId = userId,
+                PetitionId = petitionId
+            });
+        }
+        public async Task<(ServiceReturnCode, CreatePetitionSignatureDTO?)> DeletePetitionSignatureAsync(int userId, int petitionId)
+        {
+            var petition = await _context.Petitions
+                .Where(p => p.Id == petitionId)
+                .FirstOrDefaultAsync();
+            var petitionSignature = await _context.PetitionSignatures
+                .Where(ps =>
+                    ps.UserId == userId &&
+                    ps.PetitionId == petitionId)
+                .FirstOrDefaultAsync();
+            if (petition == null || petitionSignature == null)
+            {
+                return (ServiceReturnCode.NotFound, null);
+            }
+            _context.PetitionSignatures.Remove(petitionSignature);
+            --petition.SignatureCount;
+            await _context.SaveChangesAsync();
+            return (ServiceReturnCode.Success, new CreatePetitionSignatureDTO
+            {
+                UserId = userId,
+                PetitionId = petitionId
             });
         }
 
