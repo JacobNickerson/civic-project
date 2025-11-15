@@ -66,7 +66,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "Hello world!"
         };
-        var makePostResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         makePostResponse.EnsureSuccessStatusCode();
         var makePostResult = await makePostResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
         var postId = makePostResult!.Id;
@@ -75,10 +75,10 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             NewContent = "Goodbye world!"
         };
-        var updatePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}/update", updatePostRequest);
+        var updatePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}", updatePostRequest);
         updatePostResponse.EnsureSuccessStatusCode();
 
-        var deletePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}/delete","");
+        var deletePostResponse = await client.DeleteAsync($"/api/posts/{postId}");
         deletePostResponse.EnsureSuccessStatusCode();
 
         var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
@@ -98,7 +98,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "Hello world!"
         };
-        var makePostResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         Assert.Equal(HttpStatusCode.Unauthorized, makePostResponse.StatusCode);
     }
 
@@ -146,10 +146,10 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             NewContent = "Goodbye world!"
         };
-        var updatePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}/update", updatePostRequest);
+        var updatePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}", updatePostRequest);
         Assert.Equal(HttpStatusCode.Unauthorized, updatePostResponse.StatusCode);
 
-        var deletePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}/delete","");
+        var deletePostResponse = await client.DeleteAsync($"/api/posts/{postId}");
         Assert.Equal(HttpStatusCode.Unauthorized, deletePostResponse.StatusCode);
 
     }
@@ -183,7 +183,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "Hello world!"
         };
-        var makePostResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         makePostResponse.EnsureSuccessStatusCode();
         var makePostResult = await makePostResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
         var postId = makePostResult!.Id;
@@ -199,10 +199,10 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             NewContent = "Goodbye world!"
         };
-        var updateReplyResponse = await client.PostAsJsonAsync($"/api/posts/{replyId}/update", updateReplyRequest);
+        var updateReplyResponse = await client.PostAsJsonAsync($"/api/posts/{replyId}", updateReplyRequest);
         updateReplyResponse.EnsureSuccessStatusCode();
 
-        var deleteReplyResponse = await client.PostAsJsonAsync($"/api/posts/{replyId}/delete", "");
+        var deleteReplyResponse = await client.DeleteAsync($"/api/posts/{replyId}");
         deleteReplyResponse.EnsureSuccessStatusCode();
 
         var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.Id == replyId);
@@ -270,7 +270,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "Post"
         };
-        var postResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        var postResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         postResponse.EnsureSuccessStatusCode();
         var postResult = await postResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
         var reply1Response = await client.PutAsJsonAsync($"api/posts/{postResult!.Id}/replies", postRequest);
@@ -281,7 +281,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         var reply2Result = await reply2Response.Content.ReadFromJsonAsync<CreatePostDTO>();
 
         // Delete the top level
-        var deleteResult = await client.PostAsJsonAsync($"/api/posts/{postResult.Id}/delete", "");
+        var deleteResult = await client.DeleteAsync($"/api/posts/{postResult.Id}");
         deleteResult.EnsureSuccessStatusCode();
 
         // Query the posts
@@ -323,7 +323,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "Post"
         };
-        var postResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        var postResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         postResponse.EnsureSuccessStatusCode();
         var postResult = await postResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
         var reply1Response = await client.PutAsJsonAsync($"api/posts/{postResult!.Id}/replies", postRequest);
@@ -334,7 +334,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         var reply2Result = await reply2Response.Content.ReadFromJsonAsync<CreatePostDTO>();
 
         // Delete the mid level
-        var deleteResult = await client.PostAsJsonAsync($"/api/posts/{reply1Result.Id}/delete", "");
+        var deleteResult = await client.DeleteAsync($"/api/posts/{reply1Result.Id}");
         deleteResult.EnsureSuccessStatusCode();
 
         // Query the posts
@@ -375,7 +375,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         {
             Content = "Hello world!"
         };
-        var makePostResponse = await client.PutAsJsonAsync("/api/posts/create", postRequest);
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         makePostResponse.EnsureSuccessStatusCode();
         var makePostResult = await makePostResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
         var postId = makePostResult!.Id;

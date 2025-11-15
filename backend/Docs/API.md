@@ -76,7 +76,7 @@ will be set to null if left blank.
 401 Unauthorized
 
 ## User Posts
-### GET `/posts/`
+### GET `/posts`
 **Description:** Get a selection of top level posts based on a query, optionally sorted.
 
 **Parameters:**
@@ -111,21 +111,13 @@ will be set to null if left blank.
 ```
 400 Bad Request
 
-### PUT `/posts/create`
+### PUT `/posts`
 **Description:** Create a post, requires a valid JWT.
 
 **Request Body (JSON):**
 ```json
 {
-    "id": 1
-    "userId": 1,
     "content": "This is an example post!"
-    "createdAt": "2025-10-30T04:11:38.506352Z",
-    "updatedAt": null,
-    "isOfficial": false,
-    "isDeleted": false,
-    "author": null,
-    "reactions": []
 }
 ```
 
@@ -141,7 +133,7 @@ will be set to null if left blank.
 401 Unauthorized
 409 Conflict
 
-### POST `/posts/{postId}/delete`
+### DELETE `/posts/{postId}`
 **Description:** Delete a post, requires a valid JWT and a valid target. If a post is a "top-level" post, ie it has no parent, then all child posts are recursively deleted in the entire hierarchy.
 
 
@@ -155,7 +147,7 @@ will be set to null if left blank.
 401 Unauthorized
 404 Not Found
 
-### POST `/posts/{postId}/update`
+### POST `/posts/{postId}`
 **Description:** Update the contents of a post, requires a valid JWT and a valid target.
 
 **Request Body (JSON):**
@@ -176,7 +168,7 @@ will be set to null if left blank.
 401 Unauthorized
 404 Not Found
 
-### POST `/posts/{postId}/replies`
+### PUT `/posts/{postId}/replies`
 **Description:** Create a reply to an existing post or reply, requires a valid JWT and a valid target.
 
 **Request Body (JSON):**
@@ -234,7 +226,7 @@ will be set to null if left blank.
 ```
 404 Not Found
 
-### POST `/posts/{postId}/reactions`
+### PUT `/posts/{postId}/reactions`
 **Description:** Create a reaction to a specified post, requires a valid target and a valid JWT. 
 
 **Request Body (JSON):**
