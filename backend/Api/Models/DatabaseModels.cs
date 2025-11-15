@@ -7,7 +7,8 @@ namespace Api.Models
         public int Id { get; set; }
         public required string Username { get; set; }
         public required string Email { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public bool IsOfficial { get; set; } // default value `false` enforced at database level 
+        public DateTime CreatedAt { get; set; } // defualt value `CURRENT_TIMESTAMP` enforced at database level
 
         public required UserAuth Auth { get; set; }
         public required UserProfile Profile { get; set; }

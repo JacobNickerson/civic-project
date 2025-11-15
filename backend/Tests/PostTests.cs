@@ -91,6 +91,63 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         Assert.True(post!.IsDeleted);
     }
     [Fact]
+    public async Task CreateUpdateDeleteOfficialPostWithValidJWT_EndToEnd()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        ClearDatabase(dbContext);
+        // Arrange
+        // Create user
+        string username = "john";
+        string name = "John Dingle";
+        string email = "test@tester.com";
+        string password = "P@ssw0rd!";
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
+        var userResult = await createUserResponse.Content.ReadFromJsonAsync<UserDTO>();
+        createUserResponse.EnsureSuccessStatusCode();
+        // Set user to be official user
+        var user = await dbContext.Users
+            .Where(u => u.Id == userResult!.Id)
+            .FirstOrDefaultAsync();
+        user!.IsOfficial = true;
+        await dbContext.SaveChangesAsync();
+
+        // Login and store JWT
+        var loginRequest = new UserLoginRequest { Username = username, Password = password };
+        var loginResponse = await client.PostAsJsonAsync("/api/users/login", loginRequest);
+        loginResponse.EnsureSuccessStatusCode();
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<UserLoginResponse>();
+        string jwt = loginResult!.Token;
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+        // Test CRUD endpoints
+        var postRequest = new CreatePostDTO
+        {
+            Content = "Hello world!"
+        };
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts/official", postRequest);
+        makePostResponse.EnsureSuccessStatusCode();
+        var makePostResult = await makePostResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
+        var postId = makePostResult!.Id;
+
+        var updatePostRequest = new UpdatePostDTO
+        {
+            NewContent = "Goodbye world!"
+        };
+        var updatePostResponse = await client.PostAsJsonAsync($"/api/posts/{postId}", updatePostRequest);
+        updatePostResponse.EnsureSuccessStatusCode();
+
+        var deletePostResponse = await client.DeleteAsync($"/api/posts/{postId}");
+        deletePostResponse.EnsureSuccessStatusCode();
+
+        var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        Assert.Equal("Goodbye world!", post!.Content);
+        Assert.NotNull(post!.UpdatedAt);
+        Assert.True(post!.IsDeleted);
+    }
+    [Fact]
     public async Task CreatePostWithoutJWT_EndToEnd()
     {
         HttpClient client = _factory.CreateClient();
@@ -105,7 +162,118 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
         Assert.Equal(HttpStatusCode.Unauthorized, makePostResponse.StatusCode);
     }
+    [Fact]
+    public async Task CreateOfficialPostWithoutJWT_EndToEnd()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        ClearDatabase(dbContext);
 
+        var postRequest = new CreatePostDTO
+        {
+            Content = "Hello world!"
+        };
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts/official", postRequest);
+        Assert.Equal(HttpStatusCode.Unauthorized, makePostResponse.StatusCode);
+    }
+    [Fact]
+    public async Task CreateOfficialPostAsNormalUser_EndToEnd()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        ClearDatabase(dbContext);
+        // Arrange
+        // Create user
+        string username = "john";
+        string name = "John Dingle";
+        string email = "test@tester.com";
+        string password = "P@ssw0rd!";
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
+        createUserResponse.EnsureSuccessStatusCode();
+
+        // Login and store JWT
+        var loginRequest = new UserLoginRequest { Username = username, Password = password };
+        var loginResponse = await client.PostAsJsonAsync("/api/users/login", loginRequest);
+        loginResponse.EnsureSuccessStatusCode();
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<UserLoginResponse>();
+        string jwt = loginResult!.Token;
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+        // Test CRUD endpoints
+        var postRequest = new CreatePostDTO
+        {
+            Content = "Hello world!"
+        };
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
+        makePostResponse.EnsureSuccessStatusCode();
+        var makeOfficialPostResponse = await client.PutAsJsonAsync("/api/posts/official", postRequest);
+        Assert.Equal(HttpStatusCode.Unauthorized, makeOfficialPostResponse.StatusCode);
+    }
+    [Fact]
+    public async Task GetOfficialPostsOnlyGetsOfficial()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        ClearDatabase(dbContext);
+        // Arrange
+        // Create user
+        string username = "john";
+        string name = "John Dingle";
+        string email = "test@tester.com";
+        string password = "P@ssw0rd!";
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
+        var userResult = await createUserResponse.Content.ReadFromJsonAsync<UserDTO>();
+        createUserResponse.EnsureSuccessStatusCode();
+        // Set user to be official user
+        var user = await dbContext.Users
+            .Where(u => u.Id == userResult!.Id)
+            .FirstOrDefaultAsync();
+        user!.IsOfficial = true;
+        await dbContext.SaveChangesAsync();
+
+        // Login and store JWT
+        var loginRequest = new UserLoginRequest { Username = username, Password = password };
+        var loginResponse = await client.PostAsJsonAsync("/api/users/login", loginRequest);
+        loginResponse.EnsureSuccessStatusCode();
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<UserLoginResponse>();
+        string jwt = loginResult!.Token;
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+        // Create official and unofficial post
+        var postRequest = new CreatePostDTO
+        {
+            Content = "Hello world!"
+        };
+        var officialPostRequest = new CreatePostDTO
+        {
+            Content = "Hello official world!"
+        };
+        var makePostResponse = await client.PutAsJsonAsync("/api/posts", postRequest);
+        makePostResponse.EnsureSuccessStatusCode();
+        var makeOfficialPostResponse = await client.PutAsJsonAsync("/api/posts/official", officialPostRequest);
+        makeOfficialPostResponse.EnsureSuccessStatusCode();
+
+        var getPostsResponse = await client.GetAsync("/api/posts");
+        getPostsResponse.EnsureSuccessStatusCode();
+        var getPostsResult = await getPostsResponse.Content.ReadFromJsonAsync<PostQueryDTO>();
+
+        var getOfficialPostsResponse = await client.GetAsync("/api/posts/official");
+        getOfficialPostsResponse.EnsureSuccessStatusCode();
+        var getOfficialPostsResult = await getOfficialPostsResponse.Content.ReadFromJsonAsync<PostQueryDTO>();
+        
+        var posts = getPostsResult!.Posts;
+        var officialPosts = getOfficialPostsResult!.Posts;
+
+        Assert.Single(posts);
+        Assert.Single(officialPosts);
+        Assert.Equal("Hello world!", posts.First().Content);
+        Assert.Equal("Hello official world!", officialPosts.First().Content);
+    }
     [Fact]
     public async Task DeleteOrEditAnotherUserPost_EndToEnd()
     {
