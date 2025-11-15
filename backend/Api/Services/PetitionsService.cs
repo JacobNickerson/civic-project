@@ -117,7 +117,6 @@ namespace Api.Services
         }
         public async Task<(ServiceReturnCode, CreatePetitionSignatureDTO?)> CreatePetitionSignatureAsync(int userId, int petitionId)
         {
-            Console.WriteLine("OK I'm in the service function");
             var petition = await _context.Petitions.FirstOrDefaultAsync(p => p.Id == petitionId);
             if (petition == null || petition.IsDeleted)
             {
