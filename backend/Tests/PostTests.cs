@@ -15,6 +15,10 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 
+[CollectionDefinition("PostTests")]
+public class PostAndVariantTests { }
+
+[Collection("PostTests")]
 public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
@@ -439,6 +443,35 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         Assert.Equal(0, reactionsResult!.Dislikes);
         Assert.Equal(0, reactionsResult!.Hearts);
 
+    }
+    [Fact]
+    public async Task GetPostsDoesNotReturnPetitions()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        UserService userService = new UserService(dbContext);
+        PostsService postsService = new PostsService(dbContext);
+        PetitionsService petitionsService = new PetitionsService(dbContext);
+        ClearDatabase(dbContext);
+
+        // Create a post
+        var user = await userService.RegisterUserAsync(new CreateUserRequest
+        {
+            Username = "Test",
+            Name = "Test",
+            Password = "P@ssw0rd!",
+            Email = "test@test.com"
+        });
+        var (_,post) = await postsService.CreatePostAsync(user!.Id, "Hello world!");
+        // Create a petition
+        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Hello world petitioners!");
+        // Get posts
+        var getPostsResponse = await client.GetAsync($"/api/posts"); 
+        var posts = await getPostsResponse.Content.ReadFromJsonAsync<PostQueryDTO>();
+        
+        Assert.Single(posts!.Posts);
+        Assert.Equal("Hello world!",posts!.Posts.First().Content);
     }
     public void Dispose()
     {
