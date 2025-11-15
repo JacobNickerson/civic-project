@@ -341,13 +341,13 @@ Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `h
 401 Unauthorized
 404 Not Found
 
-### PUT `/posts/{postId}/replies`
-**Description:** Create a reply to an existing post or reply, requires a valid JWT and a valid target.
+### PUT `/petitions/{petitionId}/replies`
+**Description:** Create a reply to an existing petition(NOT a petition reply), requires a valid JWT and a valid target.
 
 **Request Body (JSON):**
 ```json
 {
-    "content": "This a reply to another post."
+    "content": "This a reply to a petition."
 }
 ```
 
@@ -362,7 +362,7 @@ Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `h
 401 Unauthorized
 404 Not Found
 
-### GET `/posts/{postId}/replies`
+### GET `/petitions/{petitionId}/replies`
 **Description:** Get all replies to a given petition, requires a valid target. Deleted replies are also returned, but their contents are set to `null`.
 
 **Responses:**
@@ -382,4 +382,31 @@ Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `h
 }
 ```
 400 Bad Request
+404 Not Found
+
+### PUT `/petitions/{petitionId}/sign`
+**Description:** Signs a petition. Requires a valid target, a JWT, and that the user account denoted by the JWT has not already signed the petition. 
+
+**Responses:**
+200 Ok
+```json
+{
+    "petitionid": 1,
+    "userid": 2
+}
+```
+404 Not Found
+409 Conflict
+
+### DELETE `/petitions/{petitionId}/sign`
+**Description:** Deletes a petition signature. Requires a valid target, a JWT, and that the user account denoted by the JWT has signed the petition. 
+
+**Responses:**
+200 Ok
+```json
+{
+    "petitionid": 1,
+    "userid": 2
+}
+```
 404 Not Found

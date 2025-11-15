@@ -88,9 +88,10 @@ namespace Api.Models
     {
         public required int PetitionId { get; set; }
         public required int UserId { get; set; }
+        public DateTime CreatedAt { get; set; }
 
-        public required Petition Petition{ get; set; }
-        public required User User { get; set; }
+        public Petition? Petition{ get; set; }
+        public User? User { get; set; }
     }
     public class Message
     {

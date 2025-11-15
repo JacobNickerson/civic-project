@@ -350,7 +350,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         Assert.False(post3!.IsDeleted);
     }
     [Fact]
-    public async Task CreateDeletePostReplies()
+    public async Task CreateDeletePostReactions()
     {
         HttpClient client = _factory.CreateClient();
         using var scope = _factory.Services.CreateScope();
@@ -442,7 +442,6 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         Assert.Equal(0, reactionsResult!.Likes);
         Assert.Equal(0, reactionsResult!.Dislikes);
         Assert.Equal(0, reactionsResult!.Hearts);
-
     }
     [Fact]
     public async Task GetPostsDoesNotReturnPetitions()

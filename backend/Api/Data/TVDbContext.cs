@@ -217,6 +217,9 @@ namespace Api.Data
             modelBuilder.Entity<PetitionSignature>()
                 .HasKey(ps => new { ps.UserId, ps.PetitionId } );
             modelBuilder.Entity<PetitionSignature>()
+                .Property(pr => pr.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            modelBuilder.Entity<PetitionSignature>()
                 .HasOne(ps => ps.User)
                 .WithMany(u => u.SignedPetitions)
                 .HasForeignKey(ps => ps.UserId)

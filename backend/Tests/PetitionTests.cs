@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Microsoft.VisualBasic;
 
 [Collection("PostTests")]
 public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
@@ -249,10 +250,69 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Hello world petitioners!");
         // Get petitions
         var getPetitions = await client.GetAsync($"/api/petitions"); 
-        var petitions = await getPetitions.Content.ReadFromJsonAsync<PostQueryDTO>();
+        var petitions = await getPetitions.Content.ReadFromJsonAsync<PetitionQueryDTO>();
         
-        Assert.Single(petitions!.Posts);
-        Assert.Equal("Hello world petitioners!",petitions!.Posts.First().Content);
+        Assert.Single(petitions!.Petitions);
+        Assert.Equal("Hello world petitioners!",petitions!.Petitions.First().Content);
+    }
+    [Fact]
+    public async Task CreateDeletePetitionSignature()
+    {
+        HttpClient client = _factory.CreateClient();
+        using var scope = _factory.Services.CreateScope();
+        TVDbContext dbContext = scope.ServiceProvider.GetRequiredService<TVDbContext>();
+        ClearDatabase(dbContext);
+        // Arrange
+        // Create user
+        string username = "john";
+        string name = "John Dingle";
+        string email = "test@tester.com";
+        string password = "P@ssw0rd!";
+        var createUserRequest = new CreateUserRequest { Username = username, Name = name, Email = email, Password = password };
+        var createUserResponse = await client.PutAsJsonAsync("/api/users/register", createUserRequest);
+        createUserResponse.EnsureSuccessStatusCode();
+
+        // Login and store JWT
+        var loginRequest = new UserLoginRequest { Username = username, Password = password };
+        var loginResponse = await client.PostAsJsonAsync("/api/users/login", loginRequest);
+        loginResponse.EnsureSuccessStatusCode();
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<UserLoginResponse>();
+        string jwt = loginResult!.Token;
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+        // Create petition
+        var petitionRequest = new CreatePetitionDTO
+        {
+            Content = "Hello world!"
+        };
+        var makePetitionResponse = await client.PutAsJsonAsync("/api/petitions", petitionRequest);
+        makePetitionResponse.EnsureSuccessStatusCode();
+        var makePetitionResult = await makePetitionResponse.Content.ReadFromJsonAsync<CreatePostDTO>();
+        var petitionId = makePetitionResult!.Id;
+
+        // Create signature
+        var signatureResponse = await client.PutAsJsonAsync($"/api/petitions/{petitionId}/sign",""); 
+        signatureResponse.EnsureSuccessStatusCode();
+        
+        // Get petitions
+        var getPetitionsResponse = await client.GetAsync($"/api/petitions");
+        getPetitionsResponse.EnsureSuccessStatusCode();
+        var getPetitionsResult = await getPetitionsResponse.Content.ReadFromJsonAsync<PetitionQueryDTO>(); 
+
+        Assert.Single(getPetitionsResult!.Petitions);
+        Assert.Equal(1,getPetitionsResult!.Petitions.First().SignatureCount);
+
+        // Delete signature
+        var deleteSignatureResponse = await client.DeleteAsync($"/api/petitions/{petitionId}/sign");
+        deleteSignatureResponse.EnsureSuccessStatusCode();
+
+        // Get petitions, again
+        getPetitionsResponse = await client.GetAsync($"/api/petitions");
+        getPetitionsResponse.EnsureSuccessStatusCode();
+        getPetitionsResult = await getPetitionsResponse.Content.ReadFromJsonAsync<PetitionQueryDTO>(); 
+
+        Assert.Single(getPetitionsResult!.Petitions);
+        Assert.Equal(0,getPetitionsResult!.Petitions.First().SignatureCount);
     }
     public void Dispose()
     {

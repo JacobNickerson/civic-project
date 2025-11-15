@@ -101,5 +101,35 @@ namespace Api.Controllers
             if (result is not OkResult) { return result; }
             return Ok(replies);
         }
+        [HttpPut("{petitionId}/sign")]
+        [Authorize]
+        public async Task<IActionResult> CreateSignature(int petitionId)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdStr == null)
+            {
+                return Unauthorized();
+            }
+            int userId = int.Parse(userIdStr);
+            var (returnCode, signature) = await _petitionsService.CreatePetitionSignatureAsync(userId, petitionId);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(signature);
+        }
+        [HttpDelete("{petitionId}/sign")]
+        [Authorize]
+        public async Task<IActionResult> DeleteSignature(int petitionId)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdStr == null)
+            {
+                return Unauthorized();
+            }
+            int userId = int.Parse(userIdStr);
+            var (returnCode, reaction) = await _petitionsService.DeletePetitionSignatureAsync(userId, petitionId);
+            var result = ServiceHelper.HandleReturnCode(returnCode);
+            if (result is not OkResult) { return result; }
+            return Ok(reaction);
+        }
     }
 }
