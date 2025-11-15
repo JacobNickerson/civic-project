@@ -268,3 +268,118 @@ Note that type is a stringly-typed enum, valid values are: `like`, `dislike`, `h
 }
 ```
 404 Not Found
+
+## Petitions
+### GET `/petitions`
+**Description:** Get a selection of petitions based on a query, optionally sorted.
+
+**Parameters:**
+|Name     |Type  |Required|Example    |Valid Values                                   |Default    |Description                                                                    |
+|:--------|:-----|:-------|:----------|:----------------------------------------------|:----------|:------------------------------------------------------------------------------|
+|page     |int   |true    |1          |page > 0                                       |1          |Group posts into groups of pageSize size and return the group with index `page`|
+|pageSize |int   |true    |10         |pageSize > 0                                   |10         |Determine the size of group for grouping posts into pages                      |
+|sortBy   |string|true    |"createdat"|"id","userid","content","createdat","updatedat"|"createdat"|Parameter to sort queried posts by                                             |
+|sortOrder|string|true    |"desc"     |"asc","desc"                                   |"desc"     |Order to sort posts in                                                         |
+|userId   |int   |false   |1          |userId >= 0                                    |null       |Optional parameter to limit posts to posts made by user with id `userid`       |
+|search   |string|false   |"findthis" |any string                                     |null       |Optional parameter to limit posts to posts containing the string `search`      |
+
+**Responses:**
+200 Ok
+```json
+{
+    "totalItems": 1,
+    "page": 1,
+    "pageSize": 10,
+    "totalPages": 1
+    "posts": [
+        {
+            "id": 1
+            "userId": 2,
+            "content": "Example post",
+            "createdAt": "2025-10-29T05:21:58.121288Z",
+            "updatedAt": null,
+            "reactions": [] 
+        }
+    ]
+}
+```
+400 Bad Request
+
+### PUT `/petitions`
+**Description:** Create a petition, requires a valid JWT.
+
+**Request Body (JSON):**
+```json
+{
+    "content": "This is an example petition!"
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id": 1,
+    "content": "This is an example petition!"
+}
+```
+400 BadRequest
+401 Unauthorized
+409 Conflict
+
+### DELETE `/petitions/{petitionId}`
+**Description:** Marks a petition as failed, requires a valid JWT and a valid target. 
+
+
+**Responses:**
+200 Ok
+```json
+{
+    "id": 1
+}
+```
+401 Unauthorized
+404 Not Found
+
+### PUT `/posts/{postId}/replies`
+**Description:** Create a reply to an existing post or reply, requires a valid JWT and a valid target.
+
+**Request Body (JSON):**
+```json
+{
+    "content": "This a reply to another post."
+}
+```
+
+**Responses:**
+200 Ok
+```json
+{
+    "id": 2,
+    "content": "This a reply to another post."
+}
+```
+401 Unauthorized
+404 Not Found
+
+### GET `/posts/{postId}/replies`
+**Description:** Get all replies to a given petition, requires a valid target. Deleted replies are also returned, but their contents are set to `null`.
+
+**Responses:**
+200 Ok
+```json
+{
+    [
+        {
+            "id": 2,
+            "content": "This a reply to a petition."
+        },
+        {
+            "id": 3,
+            "content": "This is also a reply to the same petition."
+        }
+    ]
+}
+```
+400 Bad Request
+404 Not Found

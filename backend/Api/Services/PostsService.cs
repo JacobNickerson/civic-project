@@ -51,7 +51,8 @@ namespace Api.Services
             query = query
                 .Where(p => !p.IsDeleted)
                 .Where(p => !p.IsOfficial)
-                .Where(p => p.ParentId == null);
+                .Where(p => p.ParentId == null)
+                .Where(po => !_context.Petitions.Any(pe => pe.Id == po.Id));
             var totalItems = await query.CountAsync();
             var posts = await query
                 .Skip((page - 1) * pageSize)
