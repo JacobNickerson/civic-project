@@ -42,7 +42,7 @@ namespace Api.Controllers
             return Ok(posts);
         }
 
-        [HttpPut("create")]
+        [HttpPut]
         [Authorize]
         public async Task<IActionResult> CreatePost([FromBody] CreatePostDTO post)
         {
@@ -59,7 +59,7 @@ namespace Api.Controllers
             return Ok(createdPost);
         }
 
-        [HttpPost("{postId}/delete")]
+        [HttpDelete("{postId}")]
         [Authorize]
         public async Task<IActionResult> DeletePost(int postId)
         {
@@ -76,7 +76,7 @@ namespace Api.Controllers
             return Ok(deletedPost);
         }
 
-        [HttpPost("{postId}/update")]
+        [HttpPost("{postId}")]
         [Authorize]
         public async Task<IActionResult> UpdatePost(int postId, [FromBody] UpdatePostDTO post)
         {
