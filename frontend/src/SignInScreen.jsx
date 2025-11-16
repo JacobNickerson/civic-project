@@ -6,13 +6,14 @@ import './SignInScreen.css';
 function SignInScreen() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [baseUrl, setBaseUrl] = useState('');
+    const [baseUrl, setBaseUrl] = useState('http://localhost:5272/api');
     const [error, setError] = useState('');
     const [signingIn, setSigningIn] = useState(false);
-    const [currentUser, setCurrentUser] = useState();
+    let currentUser = '';
     const navigate = useNavigate();
 
     const signInUser = async(e) => {
+        console.log(`current user originally ${currentUser}`);
         e.preventDefault();
         let userAuthenticated = false;
 
@@ -47,9 +48,10 @@ function SignInScreen() {
             }
             if(response.ok) {
                 userAuthenticated = true;
-                console.log(response);
-                console.log(`response.body is ${response.body}`);
-                setCurrentUser(response.body); // for some reason this is not changing the value of currentUser and it stays null, even though response.body isn't
+                const json = await response.json();
+                console.log(`json is ${json}`);
+                currentUser = json;
+                console.log(`current user is ${currentUser}`);
             }
         } catch(e) {
             setError(e.message);
