@@ -66,6 +66,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         // Test CRUD endpoints
         var petitionRequest = new CreatePetitionDTO
         {
+            Title = "Test Petition",
             Content = "Hello world!"
         };
         var makePetitionResponse = await client.PutAsJsonAsync("/api/petitions", petitionRequest);
@@ -77,6 +78,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         deletePetitionResponse.EnsureSuccessStatusCode();
 
         var petition = await dbContext.Petitions.FirstOrDefaultAsync(p => p.Id == postId);
+        Assert.Equal("Test Petition", petition!.Title);
         Assert.Equal("Hello world!", petition!.Content);
         Assert.NotNull(petition!.UpdatedAt);
         Assert.Equal(PetitionStatus.Failed,petition!.Status);
@@ -91,6 +93,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
 
         var petitionRequest = new CreatePetitionDTO
         {
+            Title = "Test Petition",
             Content = "Hello world!"
         };
         var makePetitionResponse = await client.PutAsJsonAsync("/api/petitions", petitionRequest);
@@ -133,7 +136,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
             Email = "tester@test.com",
             Password = "P@ssw0rd!",
         });
-        var (_, newPetition) = await petitionsService.CreatePetitionAsync(newUser!.Id, "Not Hello World!");
+        var (_, newPetition) = await petitionsService.CreatePetitionAsync(newUser!.Id, "Test Petition", "Not Hello World!");
         int petitionId = newPetition!.Id;
 
         // Attempt to delete
@@ -168,6 +171,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         // Create petition
         var petitionRequest = new CreatePetitionDTO
         {
+            Title = "Test Petition",
             Content = "Hello world!"
         };
         var makePetitionResponse = await client.PutAsJsonAsync("/api/petitions", petitionRequest);
@@ -216,7 +220,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
             Password = "P@ssw0rd!",
             Email = "test@test.com"
         });
-        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Hello world!");
+        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Test Petition", "Hello world!");
 
         // Reply without JWT
         var replyRequest = new CreatePostDTO
@@ -247,12 +251,13 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         });
         var (_,post) = await postsService.CreatePostAsync(user!.Id, "Hello world!");
         // Create a petition
-        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Hello world petitioners!");
+        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Test Petition", "Hello world petitioners!");
         // Get petitions
         var getPetitions = await client.GetAsync($"/api/petitions"); 
         var petitions = await getPetitions.Content.ReadFromJsonAsync<PetitionQueryDTO>();
         
         Assert.Single(petitions!.Petitions);
+        Assert.Equal("Test Petition",petitions!.Petitions.First().Title);
         Assert.Equal("Hello world petitioners!",petitions!.Petitions.First().Content);
     }
     [Fact]
@@ -283,6 +288,7 @@ public class PetitionApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         // Create petition
         var petitionRequest = new CreatePetitionDTO
         {
+            Title = "Test Petition",
             Content = "Hello world!"
         };
         var makePetitionResponse = await client.PutAsJsonAsync("/api/petitions", petitionRequest);
