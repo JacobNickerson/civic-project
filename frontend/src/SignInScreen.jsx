@@ -6,7 +6,7 @@ import './SignInScreen.css';
 function SignInScreen() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [baseUrl, setBaseUrl] = useState('http://localhost:5272/api');
+    const [baseUrl, setBaseUrl] = useState('');
     const [error, setError] = useState('');
     const [signingIn, setSigningIn] = useState(false);
     let currentUser = '';
