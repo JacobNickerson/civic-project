@@ -67,6 +67,7 @@ namespace Api.Services
                 Petitions = posts.Select(p => new PetitionDTO
                 {
                     Id = p.Id,
+                    Title = p.Title,
                     Content = p.Content,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
@@ -75,12 +76,13 @@ namespace Api.Services
                 }).ToList()
             });
         }
-        public async Task<(ServiceReturnCode, CreatePetitionDTO?)> CreatePetitionAsync(int userId, string content)
+        public async Task<(ServiceReturnCode, CreatePetitionDTO?)> CreatePetitionAsync(int userId, string title, string content)
         {
             if (String.IsNullOrEmpty(content)) { return (ServiceReturnCode.InvalidInput,null); }
             var petition = new Petition
             {
                 UserId = userId,
+                Title = title,
                 Content = content
             }; 
             var createdPetition = await _context.AddAsync(petition);
@@ -89,6 +91,7 @@ namespace Api.Services
             return (ServiceReturnCode.Success,new CreatePetitionDTO
             {
                 Id = petition.Id,
+                Title = title,
                 Content = petition.Content,
             });
         }

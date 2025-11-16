@@ -632,7 +632,7 @@ public class PostApiTests : IClassFixture<WebApplicationFactory<Program>>, IDisp
         });
         var (_,post) = await postsService.CreatePostAsync(user!.Id, "Hello world!");
         // Create a petition
-        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Hello world petitioners!");
+        var (_,petition) = await petitionsService.CreatePetitionAsync(user!.Id, "Test Petition", "Hello world petitioners!");
         // Get posts
         var getPostsResponse = await client.GetAsync($"/api/posts"); 
         var posts = await getPostsResponse.Content.ReadFromJsonAsync<PostQueryDTO>();

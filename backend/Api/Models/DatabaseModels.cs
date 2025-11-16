@@ -81,6 +81,7 @@ namespace Api.Models
     public class Petition : Post
     {
         public int SignatureCount { get; set; }
+        public required string Title { get; set; }
         public PetitionStatus Status { get; set; }
 
         public List<PetitionSignature> Signatures { get; set; } = new();  

@@ -53,7 +53,7 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode, createdPetition) = await _petitionsService.CreatePetitionAsync(userId, petition.Content);
+            var (returnCode, createdPetition) = await _petitionsService.CreatePetitionAsync(userId, petition.Title, petition.Content);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(createdPetition);
@@ -78,7 +78,7 @@ namespace Api.Controllers
 
         [HttpPut("{parentId}/replies")]
         [Authorize]
-        public async Task<IActionResult> CreateReply(int parentId, [FromBody] CreatePetitionDTO petition)
+        public async Task<IActionResult> CreateReply(int parentId, [FromBody] CreatePostDTO post)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdStr == null)
@@ -87,7 +87,7 @@ namespace Api.Controllers
             }
             int userId = int.Parse(userIdStr);
 
-            var (returnCode, createdPost) = await _petitionsService.CreateReplyAsync(userId, parentId, petition.Content);
+            var (returnCode, createdPost) = await _petitionsService.CreateReplyAsync(userId, parentId, post.Content);
             var result = ServiceHelper.HandleReturnCode(returnCode);
             if (result is not OkResult) { return result; }
             return Ok(createdPost);

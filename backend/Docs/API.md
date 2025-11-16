@@ -96,11 +96,11 @@ will be set to null if left blank.
     "totalItems": 1,
     "page": 1,
     "pageSize": 10,
-    "totalPages": 1
+    "totalPages": 1,
     "posts": [
         {
-            "id": 1
-            "userId": 2,
+            "id": 1,
+            "author": "authory jones",
             "content": "Example post",
             "createdAt": "2025-10-29T05:21:58.121288Z",
             "updatedAt": null,
@@ -291,11 +291,10 @@ Official posts are just a special type of post, most of their operations use the
     "totalItems": 1,
     "page": 1,
     "pageSize": 10,
-    "totalPages": 1
+    "totalPages": 1,
     "posts": [
         {
-            "id": 1
-            "userId": 2,
+            "id": 1,
             "content": "Example post",
             "createdAt": "2025-10-29T05:21:58.121288Z",
             "updatedAt": null,
@@ -350,15 +349,16 @@ Official posts are just a special type of post, most of their operations use the
     "totalItems": 1,
     "page": 1,
     "pageSize": 10,
-    "totalPages": 1
-    "posts": [
+    "totalPages": 1,
+    "petitions": [
         {
-            "id": 1
-            "userId": 2,
-            "content": "Example post",
+            "id": 1,
+            "title": "Example Petition",
+            "content": "This is an example petition",
             "createdAt": "2025-10-29T05:21:58.121288Z",
             "updatedAt": null,
-            "reactions": [] 
+            "signaturecount": 0,
+            "author": "authory jones",
         }
     ]
 }
@@ -371,6 +371,7 @@ Official posts are just a special type of post, most of their operations use the
 **Request Body (JSON):**
 ```json
 {
+    "title": "Example Petition",
     "content": "This is an example petition!"
 }
 ```
@@ -380,6 +381,7 @@ Official posts are just a special type of post, most of their operations use the
 ```json
 {
     "id": 1,
+    "title": "Example Petition",
     "content": "This is an example petition!"
 }
 ```
